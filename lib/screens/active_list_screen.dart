@@ -17,6 +17,93 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
   String _selectedCategory = 'All Items';
   bool _hasShownDonePrompt = false;
 
+  void _showReceiptScanSheet() {
+    final theme = Theme.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: theme.colorScheme.surface,
+      builder: (ctx) {
+        final textStyles = theme.textTheme;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.sm),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    child: Icon(Icons.document_scanner_rounded, color: theme.colorScheme.primary),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(child: Text('Scan receipt', style: textStyles.titleLarge?.copyWith(color: theme.primaryText))),
+                            const SizedBox(width: AppSpacing.sm),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.secondary.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(AppRadius.full),
+                                border: Border.all(color: theme.colorScheme.secondary.withValues(alpha: 0.25)),
+                              ),
+                              child: Text('Pro', style: textStyles.labelMedium?.copyWith(color: theme.colorScheme.secondary, fontWeight: FontWeight.w800)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text('Snap a receipt to auto-fill item prices for this list.', style: textStyles.bodyMedium?.copyWith(color: theme.secondaryText)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    // Backend/subscription not connected yet — keep this as a lightweight entry point for now.
+                    ctx.pop();
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Receipt scan is a Pro feature — coming soon.'),
+                        backgroundColor: theme.primaryText,
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.lock_rounded, color: theme.colorScheme.onPrimary),
+                  label: Text('Unlock receipt scan', style: TextStyle(color: theme.colorScheme.onPrimary)),
+                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => ctx.pop(),
+                  child: Text('Not now', style: TextStyle(color: theme.secondaryText)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _showMarkAsDonePrompt(GroceryList list) {
     if (_hasShownDonePrompt || list.isDone) return;
     _hasShownDonePrompt = true;
@@ -143,7 +230,7 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                         ),
                       Padding(
                         padding: const EdgeInsets.only(left: 32.0, top: 8.0),
-                        child: _ServingsSelector(
+                        child: _ServingsInput(
                           servings: activeList.servings,
                           onChanged: (val) => context.read<DataProvider>().setListServings(activeList.id, val),
                         ),
@@ -152,6 +239,11 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                   ),
                   Row(
                     children: [
+                      IconButton(
+                        tooltip: 'Scan receipt',
+                        icon: const Icon(Icons.document_scanner_rounded, color: Color(0xFFC4785A)),
+                        onPressed: _showReceiptScanSheet,
+                      ),
                       IconButton(
                         icon: const Icon(Icons.person_add_outlined, color: Color(0xFFC4785A)),
                         onPressed: () => context.push(AppRoutes.share),
@@ -284,6 +376,14 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                     ],
                   ),
                 ),
+              ),
+
+            // Make receipt scan discoverable at the moment it matters:
+            // when the user starts checking items off (or has purchased items).
+            if (!activeList.isDone && boughtItems.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
+                child: _ReceiptScanCallout(onTap: _showReceiptScanSheet),
               ),
             Builder(
               builder: (context) {
@@ -576,21 +676,63 @@ class _ActiveListHeader extends StatelessWidget {
   }
 }
 
-class _ServingsSelector extends StatelessWidget {
+class _ServingsInput extends StatefulWidget {
   final int servings;
   final ValueChanged<int> onChanged;
 
-  const _ServingsSelector({required this.servings, required this.onChanged});
+  const _ServingsInput({required this.servings, required this.onChanged});
+
+  @override
+  State<_ServingsInput> createState() => _ServingsInputState();
+}
+
+class _ServingsInputState extends State<_ServingsInput> {
+  late final TextEditingController _controller;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.servings.toString());
+  }
+
+  @override
+  void didUpdateWidget(covariant _ServingsInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.servings != widget.servings && _controller.text != widget.servings.toString()) {
+      _controller.text = widget.servings.toString();
+      _errorText = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _commit() {
+    final raw = _controller.text.trim();
+    final parsed = int.tryParse(raw);
+    if (parsed == null || parsed < 1 || parsed > 99) {
+      setState(() => _errorText = 'Enter 1–99');
+      return;
+    }
+    if (_errorText != null) setState(() => _errorText = null);
+    widget.onChanged(parsed);
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFFFDF6E3),
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(color: const Color(0xFFE8DFD0)),
+        border: Border.all(color: _errorText == null ? const Color(0xFFE8DFD0) : const Color(0xFFE57373)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -599,28 +741,37 @@ class _ServingsSelector extends StatelessWidget {
           const SizedBox(width: 8),
           Text('Servings', style: theme.textTheme.labelMedium?.copyWith(color: const Color(0xFF8C7E6F))),
           const SizedBox(width: 10),
-          SegmentedButton<int>(
-            segments: const [
-              ButtonSegment(value: 2, label: Text('2')),
-              ButtonSegment(value: 4, label: Text('4')),
-            ],
-            selected: {servings.clamp(2, 4)},
-            showSelectedIcon: false,
-            onSelectionChanged: (set) {
-              final val = set.isEmpty ? servings : set.first;
-              onChanged(val);
-            },
-            style: ButtonStyle(
-              visualDensity: VisualDensity.compact,
-              padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12, vertical: 6)),
-              backgroundColor: WidgetStateProperty.resolveWith(
-                (states) => states.contains(WidgetState.selected) ? const Color(0xFFC4785A) : const Color(0xFFFFFBF5),
+          SizedBox(
+            width: 44,
+            child: TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _commit(),
+              onEditingComplete: _commit,
+              style: theme.textTheme.labelLarge?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w800),
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: '2',
+                errorText: _errorText,
+                errorStyle: const TextStyle(height: 0.01, fontSize: 0),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                filled: true,
+                fillColor: const Color(0xFFFFFBF5),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                  borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                  borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                  borderSide: const BorderSide(color: Color(0xFFC4785A)),
+                ),
               ),
-              foregroundColor: WidgetStateProperty.resolveWith(
-                (states) => states.contains(WidgetState.selected) ? const Color(0xFFFFFFFF) : const Color(0xFF8C7E6F),
-              ),
-              side: const WidgetStatePropertyAll(BorderSide(color: Color(0xFFE8DFD0))),
-              shape: const WidgetStatePropertyAll(StadiumBorder()),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -629,36 +780,146 @@ class _ServingsSelector extends StatelessWidget {
   }
 }
 
-class _QuantityControl extends StatelessWidget {
+class _ReceiptScanCallout extends StatelessWidget {
+  final VoidCallback onTap;
+  const _ReceiptScanCallout({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textStyles = theme.textTheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: const Color(0xFFC4785A).withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: const Color(0xFFC4785A).withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(color: const Color(0xFFC4785A).withValues(alpha: 0.16), borderRadius: BorderRadius.circular(AppRadius.md)),
+              alignment: Alignment.center,
+              child: const Icon(Icons.document_scanner_rounded, color: Color(0xFFC4785A), size: 20),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: Text('Scan receipt', style: textStyles.titleSmall?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w800))),
+                      const SizedBox(width: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.secondary.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                          border: Border.all(color: theme.colorScheme.secondary.withValues(alpha: 0.25)),
+                        ),
+                        child: Text('Pro', style: textStyles.labelMedium?.copyWith(color: theme.colorScheme.secondary, fontWeight: FontWeight.w800)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text('Auto-fill prices from your receipt (optional).', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFF8C7E6F)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuantityControl extends StatefulWidget {
   final GroceryItem item;
   final String listId;
 
   const _QuantityControl({required this.item, required this.listId});
 
   @override
+  State<_QuantityControl> createState() => _QuantityControlState();
+}
+
+class _QuantityControlState extends State<_QuantityControl> {
+  late final TextEditingController _controller;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: _formatQty(widget.item.qty));
+  }
+
+  @override
+  void didUpdateWidget(covariant _QuantityControl oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.qty != widget.item.qty) {
+      final next = _formatQty(widget.item.qty);
+      if (_controller.text != next) {
+        _controller.text = next;
+        _errorText = null;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String _formatQty(double value) {
+    final isInt = (value - value.roundToDouble()).abs() < 0.0001;
+    if (isInt) return value.round().toString();
+    final oneDp = value.toStringAsFixed(1);
+    return oneDp.endsWith('.0') ? value.round().toString() : oneDp;
+  }
+
+  void _commit() {
+    final raw = _controller.text.trim().replaceAll(',', '.');
+    final parsed = double.tryParse(raw);
+    if (parsed == null || parsed <= 0 || parsed > 999) {
+      setState(() => _errorText = 'Enter 0.1–999');
+      return;
+    }
+    if (_errorText != null) setState(() => _errorText = null);
+    context.read<DataProvider>().setItemQty(widget.listId, widget.item.id, parsed);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isToTaste = item.isToTaste;
-    if (isToTaste) {
+    final item = widget.item;
+    if (item.isToTaste) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFFBF5),
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
+        decoration: BoxDecoration(color: const Color(0xFFFFFBF5), borderRadius: BorderRadius.circular(AppRadius.md)),
         child: Text('to taste', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: const Color(0xFF8C7E6F))),
       );
     }
 
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBF5),
         borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: _errorText == null ? const Color(0xFFE8DFD0) : const Color(0xFFE57373)),
       ),
       child: Row(
         children: [
           InkWell(
-            onTap: () => context.read<DataProvider>().adjustItemQty(listId, item.id, -1),
+            onTap: () => context.read<DataProvider>().adjustItemQty(widget.listId, item.id, -1),
             borderRadius: BorderRadius.circular(AppRadius.full),
             child: const Padding(
               padding: EdgeInsets.all(2),
@@ -666,17 +927,42 @@ class _QuantityControl extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 42),
-            child: Text(
-              item.qtyLabel,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 48,
+                child: TextField(
+                  controller: _controller,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _commit(),
+                  onEditingComplete: _commit,
+                  style: theme.textTheme.labelLarge?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w900),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: '1',
+                    errorText: _errorText,
+                    errorStyle: const TextStyle(height: 0.01, fontSize: 0),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    filled: true,
+                    fillColor: const Color(0xFFFFFBF5),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: const BorderSide(color: Color(0xFFE8DFD0))),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: const BorderSide(color: Color(0xFFE8DFD0))),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: const BorderSide(color: Color(0xFFC4785A))),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              if (item.unit.trim().isNotEmpty) ...[
+                const SizedBox(width: 6),
+                Text(item.unit, style: theme.textTheme.labelMedium?.copyWith(color: const Color(0xFF8C7E6F), fontWeight: FontWeight.w800)),
+              ],
+            ],
           ),
           const SizedBox(width: 8),
           InkWell(
-            onTap: () => context.read<DataProvider>().adjustItemQty(listId, item.id, 1),
+            onTap: () => context.read<DataProvider>().adjustItemQty(widget.listId, item.id, 1),
             borderRadius: BorderRadius.circular(AppRadius.full),
             child: const Padding(
               padding: EdgeInsets.all(2),
@@ -688,3 +974,5 @@ class _QuantityControl extends StatelessWidget {
     );
   }
 }
+
+

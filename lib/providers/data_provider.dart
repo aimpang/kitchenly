@@ -312,23 +312,71 @@ class DataProvider extends ChangeNotifier {
   }
 
   void adjustItemQty(String listId, String itemId, int delta) {
-    for (var list in [..._myLists, ..._sharedLists]) {
+    for (final list in [..._myLists, ..._sharedLists]) {
       if (list.id != listId) continue;
-      for (final item in list.items) {
+      final factor = list.servings / list.baseServings;
+      for (int i = 0; i < list.items.length; i++) {
+        final item = list.items[i];
         if (item.id != itemId) continue;
         if (item.isToTaste) return;
 
-        final step = switch (item.unit.trim().toLowerCase()) {
-          'g' => 50.0,
-          'kg' => 0.1,
-          _ => 1.0,
-        };
-        final next = item.qty + (delta * step);
-        item.qty = next < step ? step : next;
+        final step = _qtyStepForUnit(item.unit);
+        final next = _sanitizeQty(item.qty + (delta * step), item.unit);
+        list.items[i] = GroceryItem(
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          qty: next,
+          baseQty: factor == 0 ? next : (next / factor),
+          unit: item.unit,
+          price: item.price,
+          isBought: item.isBought,
+        );
         notifyListeners();
         return;
       }
     }
+  }
+
+  void setItemQty(String listId, String itemId, double qty) {
+    for (final list in [..._myLists, ..._sharedLists]) {
+      if (list.id != listId) continue;
+      final factor = list.servings / list.baseServings;
+      for (int i = 0; i < list.items.length; i++) {
+        final item = list.items[i];
+        if (item.id != itemId) continue;
+        if (item.isToTaste) return;
+
+        final next = _sanitizeQty(qty, item.unit);
+        list.items[i] = GroceryItem(
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          qty: next,
+          baseQty: factor == 0 ? next : (next / factor),
+          unit: item.unit,
+          price: item.price,
+          isBought: item.isBought,
+        );
+        notifyListeners();
+        return;
+      }
+    }
+  }
+
+  double _qtyStepForUnit(String unit) => switch (unit.trim().toLowerCase()) { 'g' => 50.0, 'kg' => 0.1, _ => 1.0 };
+
+  double _sanitizeQty(double qty, String unit) {
+    final step = _qtyStepForUnit(unit);
+    var next = qty;
+    if (next.isNaN || next.isInfinite) next = step;
+    if (next < step) next = step;
+
+    return switch (unit.trim().toLowerCase()) {
+      'g' => ((next / 50.0).round() * 50.0).clamp(50.0, 999999.0),
+      'kg' => ((next * 10.0).round() / 10.0).clamp(0.1, 999999.0),
+      _ => next.roundToDouble().clamp(1.0, 999999.0),
+    };
   }
 
   void setListServings(String listId, int servings) {
