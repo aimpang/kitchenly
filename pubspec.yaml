@@ -1,0 +1,32 @@
+name: kitchenly
+description: "Kitchenly: Your calm companion for effortless cooking and shopping, transforming the chore of grocery planning into a delightful experience with AI-powered recipes, ingredient lists, and a beautifully minimal design."
+publish_to: "none"
+version: 1.0.0
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  fl_chart: 0.68.0
+  shared_preferences: any
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  google_fonts: any
+  provider: any
+  go_router: ^16.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icons/dreamflow_icon.jpg
+  remove_alpha_ios: true
