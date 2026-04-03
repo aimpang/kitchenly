@@ -57,19 +57,32 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await context.read<AuthProvider>().login(
-            _emailController.text.trim(),
-            _passwordController.text,
-          );
+      final auth = context.read<AuthProvider>();
+      if (_isLogin) {
+        await auth.login(_emailController.text.trim(), _passwordController.text);
+        if (mounted) {
+          setState(() => _isLoading = false);
+          context.go(AppRoutes.main);
+        }
+      } else {
+        await auth.signUp(_emailController.text.trim(), _passwordController.text);
+        if (mounted) {
+          setState(() => _isLoading = false);
+          context.go(AppRoutes.welcomeName);
+        }
+      }
+    } on AuthFailure catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
-        context.go(AppRoutes.main);
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.message;
+        });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Login failed. Please try again.';
+          _errorMessage = _isLogin ? 'Login failed. Please try again.' : 'Sign up failed. Please try again.';
         });
       }
     }

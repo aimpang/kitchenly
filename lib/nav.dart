@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import 'screens/login_screen.dart';
+import 'screens/welcome_name_screen.dart';
 import 'screens/main_wrapper.dart';
 import 'screens/home_screen.dart';
 import 'screens/add_dish_screen.dart';
@@ -13,6 +14,7 @@ import 'providers/auth_provider.dart';
 
 class AppRoutes {
   static const String login = '/login';
+  static const String welcomeName = '/welcome-name';
   static const String main = '/';
   static const String addDish = '/add-dish';
   static const String activeList = '/active-list';
@@ -26,16 +28,21 @@ GoRouter buildRouter(AuthProvider authProvider) {
     refreshListenable: authProvider,
     redirect: (context, state) {
       final isLoggedIn = authProvider.isAuthenticated;
+      final needsOnboarding = authProvider.needsOnboarding;
       final currentPath = state.uri.toString();
 
-      const publicPaths = [AppRoutes.login];
+      const publicPaths = [AppRoutes.login, AppRoutes.welcomeName];
       final isOnPublicPage = publicPaths.contains(currentPath);
 
       if (!isLoggedIn && !isOnPublicPage) {
         return AppRoutes.login;
       }
 
-      if (isLoggedIn && isOnPublicPage) {
+      if (isLoggedIn && needsOnboarding && currentPath != AppRoutes.welcomeName) {
+        return AppRoutes.welcomeName;
+      }
+
+      if (isLoggedIn && !needsOnboarding && isOnPublicPage) {
         return AppRoutes.main;
       }
 
@@ -46,6 +53,11 @@ GoRouter buildRouter(AuthProvider authProvider) {
         path: AppRoutes.login,
         name: 'login',
         pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const LoginScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.welcomeName,
+        name: 'welcome-name',
+        pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const WelcomeNameScreen()),
       ),
       ShellRoute(
         builder: (context, state, child) {
