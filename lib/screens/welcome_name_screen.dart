@@ -97,6 +97,7 @@ class _WelcomeNameScreenState extends State<WelcomeNameScreen> {
                   onSubmitted: (_) => _continue(),
                   decoration: InputDecoration(
                     hintText: 'Your name',
+                    labelText: 'Your name',
                     filled: true,
                     fillColor: colorScheme.surface,
                     prefixIcon: Icon(Icons.person_outline_rounded, color: colorScheme.primary),

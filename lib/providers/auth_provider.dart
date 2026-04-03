@@ -43,6 +43,9 @@ class AuthProvider extends ChangeNotifier {
   static const _usersPrefsKey = 'auth_users_v1';
   static const _sessionPrefsKey = 'auth_session_v1';
 
+  SharedPreferences? _prefsCache;
+  Future<SharedPreferences> get _prefs async => _prefsCache ??= await SharedPreferences.getInstance();
+
   AuthProvider() {
     _hydrateFromPrefs();
   }
@@ -60,7 +63,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<List<_LocalUser>> _loadUsers() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _prefs;
       final raw = prefs.getString(_usersPrefsKey);
       if (raw == null || raw.trim().isEmpty) return [];
       final decoded = jsonDecode(raw);
@@ -84,7 +87,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _saveUsers(List<_LocalUser> users) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _prefs;
       await prefs.setString(_usersPrefsKey, jsonEncode(users.map((e) => e.toJson()).toList()));
     } catch (e) {
       debugPrint('AuthProvider: failed to save users: $e');
@@ -93,7 +96,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _saveSession({required String email}) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _prefs;
       await prefs.setString(_sessionPrefsKey, jsonEncode({'email': email}));
     } catch (e) {
       debugPrint('AuthProvider: failed to save session: $e');
@@ -102,7 +105,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _clearSession() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _prefs;
       await prefs.remove(_sessionPrefsKey);
     } catch (e) {
       debugPrint('AuthProvider: failed to clear session: $e');
@@ -111,7 +114,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _hydrateFromPrefs() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _prefs;
       final raw = prefs.getString(_sessionPrefsKey);
       if (raw == null || raw.trim().isEmpty) return;
       final decoded = jsonDecode(raw);

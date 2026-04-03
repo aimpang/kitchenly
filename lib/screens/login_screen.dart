@@ -173,6 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: 'Email',
+                    labelText: 'Email',
                     filled: true,
                     fillColor: colorScheme.surface,
                     prefixIcon: Icon(Icons.mail_outline_rounded,
@@ -195,6 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: 'Password',
+                    labelText: 'Password',
                     filled: true,
                     fillColor: colorScheme.surface,
                     prefixIcon: Icon(Icons.lock_outline_rounded,
@@ -205,33 +207,36 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                AnimatedContainer(
+                AnimatedCrossFade(
                   duration: const Duration(milliseconds: 200),
-                  height: _isLogin ? 48 : 16,
-                  alignment: Alignment.centerRight,
-                  child: _isLogin
-                      ? TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content:
-                                    const Text('Password reset coming soon!'),
-                                backgroundColor: colorScheme.primary,
-                              ),
-                            );
-                          },
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  crossFadeState: _isLogin
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
+                  firstChild: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content:
+                                const Text('Password reset coming soon!'),
+                            backgroundColor: colorScheme.primary,
                           ),
-                          child: Text(
-                            'Forgot Password?',
-                            style: textStyles.labelLarge
-                                ?.copyWith(color: colorScheme.primary),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Forgot Password?',
+                        style: textStyles.labelLarge
+                            ?.copyWith(color: colorScheme.primary),
+                      ),
+                    ),
+                  ),
+                  secondChild: const SizedBox(height: 16),
                 ),
                 FilledButton(
                   onPressed: _isLoading ? null : _submit,

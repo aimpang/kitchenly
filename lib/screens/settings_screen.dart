@@ -50,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppSpacing.paddingLg,
@@ -61,10 +61,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF4A3728)),
+                    icon: Icon(Icons.arrow_back_rounded, color: theme.primaryText),
                     onPressed: () => context.pop(),
                   ),
-                  Text('Settings', style: textStyles.titleLarge?.copyWith(color: const Color(0xFF4A3728))),
+                  Text('Settings', style: textStyles.titleLarge?.copyWith(color: theme.primaryText)),
                   const SizedBox(width: 48),
                 ],
               ),
@@ -72,11 +72,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Container(
                 padding: AppSpacing.paddingLg,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFDF6E3),
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6B4423).withValues(alpha: 0.1),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     )
@@ -87,14 +87,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Container(
                       width: 64,
                       height: 64,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFC4785A),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
                       alignment: Alignment.center,
                       child: Text(
                         userName.isEmpty ? 'C' : userName[0].toUpperCase(),
-                        style: const TextStyle(color: Color(0xFFFDF6E3), fontSize: 24, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: theme.colorScheme.surface, fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.lg),
@@ -102,9 +102,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(userName.isEmpty ? 'Chef' : userName, style: textStyles.headlineSmall?.copyWith(color: const Color(0xFF4A3728))),
+                          Text(userName.isEmpty ? 'Chef' : userName, style: textStyles.headlineSmall?.copyWith(color: theme.primaryText), maxLines: 1, overflow: TextOverflow.ellipsis),
                           const SizedBox(height: AppSpacing.xs),
-                          Text(userEmail.isEmpty ? 'user@example.com' : userEmail, style: textStyles.bodyMedium?.copyWith(color: const Color(0xFF8C7E6F))),
+                          Text(userEmail.isEmpty ? 'user@example.com' : userEmail, style: textStyles.bodyMedium?.copyWith(color: theme.secondaryText), maxLines: 1, overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 4),
                           GestureDetector(
                             onTap: () {
@@ -112,17 +112,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(authProvider.isPremium ? 'Premium activated!' : 'Switched to free plan'),
-                                  backgroundColor: const Color(0xFFC4785A),
+                                  backgroundColor: theme.colorScheme.primary,
                                 ),
                               );
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                color: isPremium ? const Color(0xFF808055) : const Color(0xFFBDB2A7),
+                                color: isPremium ? theme.colorScheme.secondary : theme.hint,
                                 borderRadius: BorderRadius.circular(AppRadius.full),
                               ),
-                              child: Text(isPremium ? 'Premium Member' : 'Free Plan', style: textStyles.labelSmall?.copyWith(color: const Color(0xFFFDF6E3))),
+                              child: Text(isPremium ? 'Premium Member' : 'Free Plan', style: textStyles.labelSmall?.copyWith(color: theme.colorScheme.surface)),
                             ),
                           ),
                         ],
@@ -132,33 +132,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Text('Price Estimation Basis', style: textStyles.titleMedium?.copyWith(color: const Color(0xFF4A3728))),
+              Text('Price Estimation Basis', style: textStyles.titleMedium?.copyWith(color: theme.primaryText)),
               const SizedBox(height: AppSpacing.md),
               Container(
                 padding: AppSpacing.paddingLg,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFDF6E3),
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: const Color(0xFFE8DFD0)),
+                  border: Border.all(color: theme.dividerColor),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Your City', style: textStyles.labelMedium?.copyWith(color: const Color(0xFF8C7E6F))),
+                    Text('Your City', style: textStyles.labelMedium?.copyWith(color: theme.secondaryText)),
                     const SizedBox(height: AppSpacing.xs),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFFBF5),
+                        color: theme.scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(AppRadius.md),
-                        border: Border.all(color: const Color(0xFFE8DFD0)),
+                        border: Border.all(color: theme.dividerColor),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedCity,
                           isExpanded: true,
                           items: ['San Francisco, CA', 'New York, NY', 'Austin, TX', 'Chicago, IL']
-                              .map((c) => DropdownMenuItem(value: c, child: Text(c, style: textStyles.bodyMedium?.copyWith(color: const Color(0xFF4A3728)))))
+                              .map((c) => DropdownMenuItem(value: c, child: Text(c, style: textStyles.bodyMedium?.copyWith(color: theme.primaryText))))
                               .toList(),
                           onChanged: (val) {
                             if (val != null) setState(() => _selectedCity = val);
@@ -167,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    Text('Preferred Store Type', style: textStyles.labelMedium?.copyWith(color: const Color(0xFF8C7E6F))),
+                    Text('Preferred Store Type', style: textStyles.labelMedium?.copyWith(color: theme.secondaryText)),
                     const SizedBox(height: AppSpacing.xs),
                     Wrap(
                       spacing: AppSpacing.sm,
@@ -183,12 +183,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.info_outlined, color: Color(0xFF808055), size: 18),
+                        Icon(Icons.info_outlined, color: theme.colorScheme.secondary, size: 18),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
                             'We use your location and store preference to provide more accurate price totals for your grocery lists.',
-                            style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F), height: 1.4),
+                            style: textStyles.bodySmall?.copyWith(color: theme.secondaryText, height: 1.4),
                           ),
                         ),
                       ],
@@ -197,14 +197,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Text('Price Book', style: textStyles.titleMedium?.copyWith(color: const Color(0xFF4A3728))),
+              Text('Price Book', style: textStyles.titleMedium?.copyWith(color: theme.primaryText)),
               const SizedBox(height: AppSpacing.md),
               Container(
                 padding: AppSpacing.paddingLg,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFDF6E3),
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: const Color(0xFFE8DFD0)),
+                  border: Border.all(color: theme.dividerColor),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -216,16 +216,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             controller: _priceSearchController,
                             decoration: InputDecoration(
                               hintText: 'Search items (e.g. eggs, milk...)',
-                              prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF8C7E6F)),
+                              prefixIcon: Icon(Icons.search_rounded, color: theme.secondaryText),
                               filled: true,
-                              fillColor: const Color(0xFFFFFBF5),
+                              fillColor: theme.scaffoldBackgroundColor,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                                borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                                borderSide: BorderSide(color: theme.dividerColor),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                                borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                                borderSide: BorderSide(color: theme.dividerColor),
                               ),
                             ),
                             onChanged: (_) => setState(() {}),
@@ -238,9 +238,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: Container(
                             width: 48,
                             height: 48,
-                            decoration: BoxDecoration(color: const Color(0xFFC4785A), borderRadius: BorderRadius.circular(AppRadius.lg)),
+                            decoration: BoxDecoration(color: theme.colorScheme.primary, borderRadius: BorderRadius.circular(AppRadius.lg)),
                             alignment: Alignment.center,
-                            child: const Icon(Icons.add_rounded, color: Color(0xFFFFFFFF)),
+                            child: Icon(Icons.add_rounded, color: theme.colorScheme.onPrimary),
                           ),
                         ),
                       ],
@@ -249,12 +249,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.info_outlined, color: Color(0xFF808055), size: 18),
+                        Icon(Icons.info_outlined, color: theme.colorScheme.secondary, size: 18),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
-                            'Prices are stored locally on this device for now. When you add items manually, we’ll use these values to estimate totals.',
-                            style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F), height: 1.4),
+                            'Prices are stored locally on this device for now. When you add items manually, we\u2019ll use these values to estimate totals.',
+                            style: textStyles.bodySmall?.copyWith(color: theme.secondaryText, height: 1.4),
                           ),
                         ),
                       ],
@@ -267,14 +267,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
                             const SizedBox(width: AppSpacing.sm),
-                            Text('Loading price book…', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                            Text('Loading price book\u2026', style: textStyles.bodySmall?.copyWith(color: theme.secondaryText)),
                           ],
                         ),
                       )
                     else if (priceEntries.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Text('No matches. Tap + to add an item.', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                        child: Text('No matches. Tap + to add an item.', style: textStyles.bodySmall?.copyWith(color: theme.secondaryText)),
                       )
                     else
                       ...priceEntries.take(12).map((e) => _PriceBookRow(
@@ -285,13 +285,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (priceEntries.length > 12)
                       Padding(
                         padding: const EdgeInsets.only(top: AppSpacing.sm),
-                        child: Text('Showing 12 of ${priceEntries.length}. Refine your search to find more.', style: textStyles.labelSmall?.copyWith(color: const Color(0xFFBDB2A7))),
+                        child: Text('Showing 12 of ${priceEntries.length}. Refine your search to find more.', style: textStyles.labelSmall?.copyWith(color: theme.hint)),
                       ),
                   ],
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Text('Account & App', style: textStyles.titleMedium?.copyWith(color: const Color(0xFF4A3728))),
+              Text('Account & App', style: textStyles.titleMedium?.copyWith(color: theme.primaryText)),
               const SizedBox(height: AppSpacing.md),
               _buildSettingsItem(Icons.notifications_none_rounded, 'Notifications', subtitle: 'Reminders for shared lists', context: context, onTap: () => _showComingSoon('Notification settings')),
               _buildSettingsItem(Icons.group_add_rounded, 'Collaboration', subtitle: 'Manage who can see your lists', context: context, onTap: () => context.push(AppRoutes.share)),
@@ -303,8 +303,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context.read<AuthProvider>().logout();
                   context.go(AppRoutes.login);
                 },
-                icon: const Icon(Icons.logout_rounded, color: Color(0xFFD9534F)),
-                label: Text('Sign Out', style: textStyles.titleMedium?.copyWith(color: const Color(0xFFD9534F))),
+                icon: Icon(Icons.logout_rounded, color: theme.colorScheme.error),
+                label: Text('Sign Out', style: textStyles.titleMedium?.copyWith(color: theme.colorScheme.error)),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
@@ -313,9 +313,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Center(
                 child: Column(
                   children: [
-                    Text('Kitchenly v1.0.0', style: textStyles.labelSmall?.copyWith(color: const Color(0xFFBDB2A7))),
+                    Text('Kitchenly v1.0.0', style: textStyles.labelSmall?.copyWith(color: theme.hint)),
                     const SizedBox(height: AppSpacing.xs),
-                    Text('Crafted for a calm kitchen', style: textStyles.labelSmall?.copyWith(color: const Color(0xFFBDB2A7), fontStyle: FontStyle.italic)),
+                    Text('Crafted for a calm kitchen', style: textStyles.labelSmall?.copyWith(color: theme.hint, fontStyle: FontStyle.italic)),
                   ],
                 ),
               ),
@@ -327,32 +327,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showComingSoon(String feature) {
+    final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature coming soon!'), backgroundColor: const Color(0xFFC4785A)),
+      SnackBar(content: Text('$feature coming soon!'), backgroundColor: theme.colorScheme.primary),
     );
   }
 
   Widget _buildStoreChip(String label, IconData icon) {
+    final theme = Theme.of(context);
     final selected = _selectedStore == label;
-    return GestureDetector(
+    return InkWell(
       onTap: () => setState(() => _selectedStore = label),
+      borderRadius: BorderRadius.circular(AppRadius.full),
       child: Container(
         margin: const EdgeInsets.only(right: AppSpacing.sm, bottom: AppSpacing.sm),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFC4785A) : const Color(0xFFFDF6E3),
+          color: selected ? theme.colorScheme.primary : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(color: selected ? Colors.transparent : const Color(0xFFE8DFD0)),
+          border: Border.all(color: selected ? Colors.transparent : theme.dividerColor),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: selected ? const Color(0xFFFFFFFF) : const Color(0xFF8C7E6F)),
+            Icon(icon, size: 16, color: selected ? theme.colorScheme.onPrimary : theme.secondaryText),
             const SizedBox(width: AppSpacing.xs),
             Text(
               label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: selected ? const Color(0xFFFFFFFF) : const Color(0xFF4A3728),
+              style: theme.textTheme.labelLarge?.copyWith(
+                    color: selected ? theme.colorScheme.onPrimary : theme.primaryText,
                     fontWeight: FontWeight.w500,
                   ),
             ),
@@ -363,6 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingsItem(IconData icon, String title, {String? subtitle, required BuildContext context, VoidCallback? onTap}) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -370,9 +374,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: AppSpacing.paddingMd,
         decoration: BoxDecoration(
-          color: const Color(0xFFFDF6E3),
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: const Color(0xFFE8DFD0)),
+          border: Border.all(color: theme.dividerColor),
         ),
         child: Row(
           children: [
@@ -380,26 +384,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFBF5),
+                color: theme.scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               alignment: Alignment.center,
-              child: Icon(icon, color: const Color(0xFFC4785A), size: 22),
+              child: Icon(icon, color: theme.colorScheme.primary, size: 22),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w600)),
+                  Text(title, style: theme.textTheme.bodyLarge?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w600)),
                   if (subtitle != null) ...[
                     const SizedBox(height: AppSpacing.xs),
-                    Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                    Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: theme.secondaryText)),
                   ],
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFFBDB2A7), size: 20),
+            Icon(Icons.chevron_right_rounded, color: theme.hint, size: 20),
           ],
         ),
       ),
@@ -407,8 +411,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _showEditPriceBookEntrySheet(BuildContext context, {required PriceBookEntry? initial}) async {
-    final theme = Theme.of(context);
-    final textStyles = theme.textTheme;
     final nameController = TextEditingController(text: initial?.name ?? '');
     final priceController = TextEditingController(text: initial == null ? '' : initial.unitPrice.toStringAsFixed(2));
     String category = initial?.category ?? 'Other';
@@ -417,8 +419,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final name = nameController.text.trim();
       final price = double.tryParse(priceController.text.trim());
       if (name.isEmpty || price == null || price.isNaN || price.isInfinite || price < 0) {
+        final theme = Theme.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Enter a valid name and price.'), backgroundColor: Color(0xFF4A3728)),
+          SnackBar(content: const Text('Enter a valid name and price.'), backgroundColor: theme.primaryText),
         );
         return;
       }
@@ -441,6 +444,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           child: StatefulBuilder(
             builder: (context, setSheetState) {
+              final theme = Theme.of(context);
+              final textStyles = theme.textTheme;
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -448,8 +453,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(initial == null ? 'Add Price' : 'Edit Price', style: textStyles.titleLarge?.copyWith(color: const Color(0xFF4A3728))),
-                      IconButton(icon: const Icon(Icons.close_rounded, color: Color(0xFF8C7E6F)), onPressed: () => ctx.pop()),
+                      Text(initial == null ? 'Add Price' : 'Edit Price', style: textStyles.titleLarge?.copyWith(color: theme.primaryText)),
+                      IconButton(icon: Icon(Icons.close_rounded, color: theme.secondaryText), onPressed: () => ctx.pop()),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -459,9 +464,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     decoration: InputDecoration(
                       labelText: 'Item name',
                       filled: true,
-                      fillColor: const Color(0xFFFDF6E3),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: const BorderSide(color: Color(0xFFE8DFD0))),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: const BorderSide(color: Color(0xFFE8DFD0))),
+                      fillColor: theme.colorScheme.surface,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: BorderSide(color: theme.dividerColor)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: BorderSide(color: theme.dividerColor)),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -472,31 +477,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       labelText: 'Unit price (USD)',
                       prefixText: '\$',
                       filled: true,
-                      fillColor: const Color(0xFFFDF6E3),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: const BorderSide(color: Color(0xFFE8DFD0))),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: const BorderSide(color: Color(0xFFE8DFD0))),
+                      fillColor: theme.colorScheme.surface,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: BorderSide(color: theme.dividerColor)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.lg), borderSide: BorderSide(color: theme.dividerColor)),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Category', style: textStyles.labelMedium?.copyWith(color: const Color(0xFF8C7E6F))),
+                  Text('Category', style: textStyles.labelMedium?.copyWith(color: theme.secondaryText)),
                   const SizedBox(height: AppSpacing.xs),
                   Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
                     children: ['Produce', 'Dairy', 'Bakery', 'Pantry', 'Meat', 'Seafood', 'Other'].map((c) {
                       final selected = category == c;
-                      return GestureDetector(
+                      return InkWell(
                         onTap: () => setSheetState(() => category = c),
+                        borderRadius: BorderRadius.circular(AppRadius.full),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                           decoration: BoxDecoration(
-                            color: selected ? const Color(0xFFC4785A) : const Color(0xFFFDF6E3),
+                            color: selected ? theme.colorScheme.primary : theme.colorScheme.surface,
                             borderRadius: BorderRadius.circular(AppRadius.full),
-                            border: Border.all(color: selected ? Colors.transparent : const Color(0xFFE8DFD0)),
+                            border: Border.all(color: selected ? Colors.transparent : theme.dividerColor),
                           ),
                           child: Text(
                             c,
-                            style: textStyles.labelLarge?.copyWith(color: selected ? const Color(0xFFFFFFFF) : const Color(0xFF4A3728), fontWeight: FontWeight.w500),
+                            style: textStyles.labelLarge?.copyWith(color: selected ? theme.colorScheme.onPrimary : theme.primaryText, fontWeight: FontWeight.w500),
                           ),
                         ),
                       );
@@ -508,9 +514,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                     child: Container(
                       height: 52,
-                      decoration: BoxDecoration(color: const Color(0xFFC4785A), borderRadius: BorderRadius.circular(AppRadius.lg)),
+                      decoration: BoxDecoration(color: theme.colorScheme.primary, borderRadius: BorderRadius.circular(AppRadius.lg)),
                       alignment: Alignment.center,
-                      child: Text('Save', style: textStyles.titleMedium?.copyWith(color: const Color(0xFFFFFFFF))),
+                      child: Text('Save', style: textStyles.titleMedium?.copyWith(color: theme.colorScheme.onPrimary)),
                     ),
                   ),
                 ],
@@ -532,7 +538,8 @@ class _PriceBookRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyles = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final textStyles = theme.textTheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -540,9 +547,9 @@ class _PriceBookRow extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: AppSpacing.paddingMd,
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFBF5),
+          color: theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: const Color(0xFFE8DFD0)),
+          border: Border.all(color: theme.dividerColor),
         ),
         child: Row(
           children: [
@@ -550,20 +557,20 @@ class _PriceBookRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(entry.name, style: textStyles.bodyLarge?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(entry.name, style: textStyles.bodyLarge?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: const Color(0xFFFDF6E3), borderRadius: BorderRadius.circular(AppRadius.full)),
-                    child: Text(entry.category, style: textStyles.labelSmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                    decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(AppRadius.full)),
+                    child: Text(entry.category, style: textStyles.labelSmall?.copyWith(color: theme.secondaryText)),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: AppSpacing.md),
-            Text('\$${entry.unitPrice.toStringAsFixed(2)}', style: textStyles.titleMedium?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w700)),
+            Text('\$${entry.unitPrice.toStringAsFixed(2)}', style: textStyles.titleMedium?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w700)),
             const SizedBox(width: AppSpacing.sm),
-            IconButton(icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFF8C7E6F)), onPressed: onDelete),
+            IconButton(icon: Icon(Icons.delete_outline_rounded, color: theme.secondaryText), onPressed: onDelete),
           ],
         ),
       ),

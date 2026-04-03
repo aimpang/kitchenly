@@ -64,7 +64,7 @@ class _MyListsScreenState extends State<MyListsScreen> {
             onPressed: () {
               final title = controller.text.trim();
               if (title.isEmpty) return;
-              final id = DateTime.now().microsecondsSinceEpoch.toString();
+              final id = context.read<DataProvider>().generateId();
               context.read<DataProvider>().addList(
                 GroceryList(
                   id: id,
@@ -97,14 +97,14 @@ class _MyListsScreenState extends State<MyListsScreen> {
     final completedLists = _selectedFilter == 'All Lists' ? _applyFilter(dataProvider.myLists.where((l) => l.isDone).toList()) : <GroceryList>[];
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
               padding: AppSpacing.paddingLg,
-              color: Theme.of(context).scaffoldBackgroundColor,
+              color: theme.scaffoldBackgroundColor,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -112,11 +112,11 @@ class _MyListsScreenState extends State<MyListsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.chevron_left_rounded, color: Color(0xFF4A3728), size: 28),
+                        icon: Icon(Icons.chevron_left_rounded, color: theme.primaryText, size: 28),
                         onPressed: () => context.go(AppRoutes.main),
                       ),
                       IconButton(
-                        icon: Icon(_showSearch ? Icons.close_rounded : Icons.search_rounded, color: const Color(0xFF4A3728), size: 24),
+                        icon: Icon(_showSearch ? Icons.close_rounded : Icons.search_rounded, color: theme.primaryText, size: 24),
                         onPressed: () {
                           setState(() {
                             _showSearch = !_showSearch;
@@ -135,7 +135,7 @@ class _MyListsScreenState extends State<MyListsScreen> {
                         hintText: 'Search lists...',
                         prefixIcon: const Icon(Icons.search_rounded),
                         filled: true,
-                        fillColor: const Color(0xFFFDF6E3),
+                        fillColor: theme.colorScheme.surface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppRadius.lg),
                           borderSide: BorderSide.none,
@@ -145,8 +145,8 @@ class _MyListsScreenState extends State<MyListsScreen> {
                     ),
                   ],
                   const SizedBox(height: AppSpacing.sm),
-                  Text('My Saved Lists', style: textStyles.headlineMedium?.copyWith(color: const Color(0xFF6B4423), fontWeight: FontWeight.w800)),
-                  Text('Manage your weekly essentials and shared plans', style: textStyles.bodyMedium?.copyWith(color: const Color(0xFF8C7E6F))),
+                  Text('My Saved Lists', style: textStyles.headlineMedium?.copyWith(color: theme.colorScheme.onSurface, fontWeight: FontWeight.w800)),
+                  Text('Manage your weekly essentials and shared plans', style: textStyles.bodyMedium?.copyWith(color: theme.secondaryText)),
                 ],
               ),
             ),
@@ -171,16 +171,16 @@ class _MyListsScreenState extends State<MyListsScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.receipt_long_outlined, color: Color(0xFFBDB2A7), size: 48),
+                          Icon(Icons.receipt_long_outlined, color: theme.hint, size: 48),
                           const SizedBox(height: AppSpacing.md),
                           Text(
                             _searchController.text.isNotEmpty ? 'No lists match your search' : 'No lists yet',
-                            style: textStyles.bodyLarge?.copyWith(color: const Color(0xFF8C7E6F)),
+                            style: textStyles.bodyLarge?.copyWith(color: theme.secondaryText),
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           TextButton(
                             onPressed: _createNewList,
-                            child: Text('Create your first list', style: textStyles.labelLarge?.copyWith(color: const Color(0xFFC4785A))),
+                            child: Text('Create your first list', style: textStyles.labelLarge?.copyWith(color: theme.colorScheme.primary)),
                           ),
                         ],
                       ),
@@ -191,15 +191,15 @@ class _MyListsScreenState extends State<MyListsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Active Shopping', style: textStyles.titleSmall?.copyWith(color: const Color(0xFF808055))),
-                            Text('${activeLists.length} lists', style: textStyles.labelSmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                            Text('Active Shopping', style: textStyles.titleSmall?.copyWith(color: theme.colorScheme.secondary)),
+                            Text('${activeLists.length} lists', style: textStyles.labelSmall?.copyWith(color: theme.secondaryText)),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         ...activeLists.map((list) => _buildDismissibleCard(context, list)),
                         if (_selectedFilter == 'All Lists' && completedLists.isNotEmpty) ...[
                           const SizedBox(height: AppSpacing.lg),
-                          Text('Recently Completed', style: textStyles.titleSmall?.copyWith(color: const Color(0xFF808055))),
+                          Text('Recently Completed', style: textStyles.titleSmall?.copyWith(color: theme.colorScheme.secondary)),
                           const SizedBox(height: AppSpacing.sm),
                           ...completedLists.map((list) => _buildDismissibleCard(context, list)),
                         ],
@@ -210,10 +210,10 @@ class _MyListsScreenState extends State<MyListsScreen> {
                             children: [
                               Opacity(
                                 opacity: 0.5,
-                                child: Icon(Icons.eco_rounded, color: const Color(0xFF808055), size: 32),
+                                child: Icon(Icons.eco_rounded, color: theme.colorScheme.secondary, size: 32),
                               ),
                               const SizedBox(height: AppSpacing.sm),
-                              Text('You\'ve reached the end of your recent lists', style: textStyles.bodySmall?.copyWith(color: const Color(0xFFBDB2A7))),
+                              Text('You\'ve reached the end of your recent lists', style: textStyles.bodySmall?.copyWith(color: theme.hint)),
                             ],
                           ),
                         ),
@@ -229,29 +229,31 @@ class _MyListsScreenState extends State<MyListsScreen> {
           heroTag: 'my_lists_create_list_fab',
           tooltip: 'Create new list',
           onPressed: _createNewList,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: Icon(Icons.add_rounded, color: Theme.of(context).colorScheme.onPrimary),
+          backgroundColor: theme.colorScheme.primary,
+          child: Icon(Icons.add_rounded, color: theme.colorScheme.onPrimary),
         ),
       ),
     );
   }
 
   Widget _buildFilterChip(String label, bool selected) {
-    return GestureDetector(
+    final theme = Theme.of(context);
+    return InkWell(
       onTap: () => setState(() => _selectedFilter = label),
+      borderRadius: BorderRadius.circular(AppRadius.full),
       child: Container(
         margin: const EdgeInsets.only(right: AppSpacing.sm),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFC4785A) : const Color(0xFFFDF6E3),
+          color: selected ? theme.colorScheme.primary : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(color: selected ? Colors.transparent : const Color(0xFFE8DFD0)),
+          border: Border.all(color: selected ? Colors.transparent : theme.dividerColor),
         ),
         alignment: Alignment.center,
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: selected ? const Color(0xFFFFFFFF) : const Color(0xFF8C7E6F),
+          style: theme.textTheme.labelLarge?.copyWith(
+                color: selected ? theme.colorScheme.onPrimary : theme.secondaryText,
               ),
         ),
       ),
@@ -259,6 +261,7 @@ class _MyListsScreenState extends State<MyListsScreen> {
   }
 
   Widget _buildDismissibleCard(BuildContext context, GroceryList list) {
+    final theme = Theme.of(context);
     return Dismissible(
       key: Key(list.id),
       direction: DismissDirection.endToStart,
@@ -267,10 +270,10 @@ class _MyListsScreenState extends State<MyListsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         margin: const EdgeInsets.only(bottom: AppSpacing.md),
         decoration: BoxDecoration(
-          color: const Color(0xFFE57373).withValues(alpha: 0.1),
+          color: theme.colorScheme.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFE57373)),
+        child: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error),
       ),
       onDismissed: (_) {
         final provider = context.read<DataProvider>();
@@ -279,10 +282,10 @@ class _MyListsScreenState extends State<MyListsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('"${list.title}" deleted'),
-            backgroundColor: const Color(0xFF4A3728),
+            backgroundColor: theme.primaryText,
             action: SnackBarAction(
               label: 'Undo',
-              textColor: const Color(0xFFFDF6E3),
+              textColor: theme.colorScheme.surface,
               onPressed: () => provider.addList(list),
             ),
           ),
@@ -306,90 +309,95 @@ class _MyListsScreenState extends State<MyListsScreen> {
   }
 
   Widget _buildListCard(BuildContext context, {required String title, required String date, required String itemCount, required double progress, required String totalPrice, required bool isShared, required bool isDone, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-        padding: AppSpacing.paddingLg,
-        decoration: BoxDecoration(
-          color: const Color(0xFFFDF6E3),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: const Color(0xFFE8DFD0)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF6B4423).withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: 'Open list $title',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+          padding: AppSpacing.paddingLg,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: theme.dividerColor),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              )
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title, style: theme.textTheme.titleMedium?.copyWith(color: theme.primaryText), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(date, style: theme.textTheme.bodySmall?.copyWith(color: theme.secondaryText)),
+                      ],
+                    ),
+                  ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Flexible(child: ListStatusBadges(isDone: isDone, isShared: isShared)),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                child: Divider(color: theme.dividerColor),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
                     children: [
-                      Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: const Color(0xFF4A3728)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      Text(date, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('$itemCount Items', style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryText)),
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            width: 80,
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: theme.dividerColor,
+                              color: theme.success,
+                              minHeight: 4,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Est. Total', style: theme.textTheme.labelSmall?.copyWith(color: theme.secondaryText)),
+                          Text(totalPrice, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ],
                   ),
-                ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Flexible(child: ListStatusBadges(isDone: isDone, isShared: isShared)),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Divider(color: Theme.of(context).dividerColor),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('$itemCount Items', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A3728))),
-                        const SizedBox(height: 4),
-                        SizedBox(
-                          width: 80,
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            backgroundColor: const Color(0xFFE0E0E0),
-                            color: const Color(0xFF8BA888),
-                            minHeight: 4,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ],
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
-                    const SizedBox(width: AppSpacing.md),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Est. Total', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF8C7E6F))),
-                        Text(totalPrice, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF6B4423), fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.xs),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFDF6E3),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    child: Icon(Icons.arrow_forward_ios_rounded, size: 18, color: theme.colorScheme.primary),
                   ),
-                  child: const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Color(0xFFC4785A)),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -404,6 +412,7 @@ class ListStatusBadges extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Align(
       alignment: Alignment.centerRight,
       child: Wrap(
@@ -425,19 +434,20 @@ class _DoneBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: const Color(0xFF8BA888).withValues(alpha: 0.14),
+        color: theme.success.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: const Color(0xFF8BA888)),
+        border: Border.all(color: theme.success),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF8BA888)),
+          Icon(Icons.check_circle_rounded, size: 14, color: theme.success),
           const SizedBox(width: AppSpacing.xs),
-          Text('Done', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF8BA888), fontWeight: FontWeight.w700)),
+          Text('Done', style: theme.textTheme.labelSmall?.copyWith(color: theme.success, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -450,19 +460,20 @@ class _SharePrivacyBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: isShared ? const Color(0xFFFDF6E3) : Colors.transparent,
+        color: isShared ? theme.colorScheme.surface : Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: isShared ? const Color(0xFFC4785A) : Colors.transparent),
+        border: Border.all(color: isShared ? theme.colorScheme.primary : Colors.transparent),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(isShared ? Icons.group_rounded : Icons.lock_outline_rounded, size: 14, color: isShared ? const Color(0xFFC4785A) : const Color(0xFF8C7E6F)),
+          Icon(isShared ? Icons.group_rounded : Icons.lock_outline_rounded, size: 14, color: isShared ? theme.colorScheme.primary : theme.secondaryText),
           const SizedBox(width: AppSpacing.xs),
-          Text(isShared ? 'Shared' : 'Private', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: isShared ? const Color(0xFFC4785A) : const Color(0xFF8C7E6F))),
+          Text(isShared ? 'Shared' : 'Private', style: theme.textTheme.labelSmall?.copyWith(color: isShared ? theme.colorScheme.primary : theme.secondaryText)),
         ],
       ),
     );

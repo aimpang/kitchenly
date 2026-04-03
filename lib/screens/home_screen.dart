@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textStyles = theme.textTheme;
-    final userName = context.watch<AuthProvider>().userName;
+    final userName = context.select<AuthProvider, String>((a) => a.userName);
     final dataProvider = context.watch<DataProvider>();
 
     return Scaffold(
@@ -30,26 +30,33 @@ class HomeScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Good Morning, ${userName.isEmpty ? 'Chef' : userName}', style: textStyles.headlineMedium?.copyWith(color: const Color(0xFF4A3728))),
-                      Text('What\'s on the menu today?', style: textStyles.bodyMedium?.copyWith(color: const Color(0xFF8C7E6F))),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${_greeting()}, ${userName.isEmpty ? 'Chef' : userName}', style: textStyles.headlineMedium?.copyWith(color: theme.primaryText), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text('What\'s on the menu today?', style: textStyles.bodyMedium?.copyWith(color: theme.secondaryText)),
+                      ],
+                    ),
                   ),
-                  InkWell(
-                    onTap: () => context.push(AppRoutes.settings),
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFC4785A),
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        userName.isEmpty ? 'C' : userName[0].toUpperCase(),
-                        style: const TextStyle(color: Color(0xFFFDF6E3), fontSize: 20, fontWeight: FontWeight.bold),
+                  const SizedBox(width: AppSpacing.sm),
+                  Semantics(
+                    button: true,
+                    label: 'Settings',
+                    child: InkWell(
+                      onTap: () => context.push(AppRoutes.settings),
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          userName.isEmpty ? 'C' : userName[0].toUpperCase(),
+                          style: TextStyle(color: theme.colorScheme.surface, fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   )
@@ -62,8 +69,8 @@ class HomeScreen extends StatelessWidget {
                     child: _buildActionCard(
                       context,
                       icon: Icons.add_shopping_cart_rounded,
-                      iconBg: const Color(0xFFFDF6E3),
-                      iconColor: const Color(0xFFC4785A),
+                      iconBg: theme.colorScheme.surface,
+                      iconColor: theme.colorScheme.primary,
                       title: 'Add Items',
                       subtitle: 'Quickly tap or speak items',
                       onTap: () => showQuickAddSheet(context),
@@ -74,8 +81,8 @@ class HomeScreen extends StatelessWidget {
                     child: _buildActionCard(
                       context,
                       icon: Icons.restaurant_menu_rounded,
-                      iconBg: const Color(0xFFFDF6E3),
-                      iconColor: const Color(0xFF808055),
+                      iconBg: theme.colorScheme.surface,
+                      iconColor: theme.colorScheme.secondary,
                       title: 'Add a Dish',
                       subtitle: 'Generate list from recipes',
                       onTap: () => context.push(AppRoutes.addDish),
@@ -90,8 +97,8 @@ class HomeScreen extends StatelessWidget {
                     child: _buildActionCard(
                       context,
                       icon: Icons.receipt_long_rounded,
-                      iconBg: const Color(0xFFFDF6E3),
-                      iconColor: const Color(0xFF6B4423),
+                      iconBg: theme.colorScheme.surface,
+                      iconColor: theme.colorScheme.onSurface,
                       title: 'My Lists',
                       subtitle: 'Manage your active lists',
                       onTap: () => context.push('/my-lists'),
@@ -102,8 +109,8 @@ class HomeScreen extends StatelessWidget {
                     child: _buildActionCard(
                       context,
                       icon: Icons.group_add_rounded,
-                      iconBg: const Color(0xFFFDF6E3),
-                      iconColor: const Color(0xFFF08080),
+                      iconBg: theme.colorScheme.surface,
+                      iconColor: theme.accent,
                       title: 'Shared',
                       subtitle: 'Collaborate with others',
                       onTap: () => context.push('/shared'),
@@ -114,7 +121,8 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.xl),
               Builder(
                 builder: (context) {
-                  final allLists = [...dataProvider.myLists, ...dataProvider.sharedLists];
+                  final theme = Theme.of(context);
+                  final allLists = dataProvider.allLists;
                   final totalSpending = allLists.fold<double>(0, (sum, l) => sum + l.totalPrice);
                   final boughtSpending = allLists.fold<double>(0, (sum, l) => sum + l.boughtPrice);
                   // Build per-category spending for the bar chart
@@ -131,9 +139,9 @@ class HomeScreen extends StatelessWidget {
                   return Container(
                     padding: AppSpacing.paddingLg,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFDF6E3),
+                      color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFFE8DFD0)),
+                      border: Border.all(color: theme.dividerColor),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -141,17 +149,17 @@ class HomeScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Spending Overview', style: textStyles.titleSmall?.copyWith(color: const Color(0xFF4A3728))),
-                            Text('\$${totalSpending.toStringAsFixed(2)} total', style: textStyles.labelLarge?.copyWith(color: const Color(0xFFC4785A))),
+                            Text('Spending Overview', style: textStyles.titleSmall?.copyWith(color: theme.primaryText)),
+                            Text('\$${totalSpending.toStringAsFixed(2)} total', style: textStyles.labelLarge?.copyWith(color: theme.colorScheme.primary)),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.xs),
-                        Text('\$${boughtSpending.toStringAsFixed(2)} purchased so far', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                        Text('\$${boughtSpending.toStringAsFixed(2)} purchased so far', style: textStyles.bodySmall?.copyWith(color: theme.secondaryText)),
                         const SizedBox(height: AppSpacing.md),
                         if (topCategories.isEmpty)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                            child: Text('Add items to see spending breakdown', style: textStyles.bodySmall?.copyWith(color: const Color(0xFFBDB2A7)), textAlign: TextAlign.center),
+                            child: Text('Add items to see spending breakdown', style: textStyles.bodySmall?.copyWith(color: theme.hint), textAlign: TextAlign.center),
                           )
                         else
                           SizedBox(
@@ -172,7 +180,10 @@ class HomeScreen extends StatelessWidget {
                                         final label = topCategories[idx].key;
                                         return Padding(
                                           padding: const EdgeInsets.only(top: 8.0),
-                                          child: Text(label.length > 5 ? label.substring(0, 5) : label, style: const TextStyle(color: Color(0xFF8C7E6F), fontSize: 9)),
+                                          child: SizedBox(
+                                            width: 40,
+                                            child: Text(label, style: TextStyle(color: theme.secondaryText, fontSize: 9), overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),
+                                          ),
                                         );
                                       },
                                     ),
@@ -183,7 +194,7 @@ class HomeScreen extends StatelessWidget {
                                 ),
                                 gridData: const FlGridData(show: false),
                                 borderData: FlBorderData(show: false),
-                                barGroups: List.generate(topCategories.length, (i) => _makeGroupData(i, topCategories[i].value)),
+                                barGroups: List.generate(topCategories.length, (i) => _makeGroupData(i, topCategories[i].value, theme.colorScheme.primary)),
                               ),
                             ),
                           ),
@@ -196,10 +207,10 @@ class HomeScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Recent Lists', style: textStyles.titleMedium?.copyWith(color: const Color(0xFF4A3728))),
+                  Text('Recent Lists', style: textStyles.titleMedium?.copyWith(color: theme.primaryText)),
                   TextButton(
                     onPressed: () => context.push('/my-lists'),
-                    child: Text('See All', style: textStyles.labelLarge?.copyWith(color: const Color(0xFFC4785A))),
+                    child: Text('See All', style: textStyles.labelLarge?.copyWith(color: theme.colorScheme.primary)),
                   ),
                 ],
               ),
@@ -208,7 +219,7 @@ class HomeScreen extends StatelessWidget {
                 return _buildListPreview(
                   context,
                   icon: list.isShared ? Icons.local_pizza_rounded : Icons.eco_rounded,
-                  color: list.isShared ? const Color(0xFFC4785A) : const Color(0xFF808055),
+                  color: list.isShared ? theme.colorScheme.primary : theme.colorScheme.secondary,
                   name: list.title,
                   details: '${list.items.length} items • ${list.isShared ? 'Shared' : 'Personal'}',
                   price: '\$${list.totalPrice.toStringAsFixed(2)}',
@@ -219,40 +230,44 @@ class HomeScreen extends StatelessWidget {
                 );
               }),
               const SizedBox(height: AppSpacing.xl),
-              InkWell(
-                onTap: () => context.push(AppRoutes.addDish),
-                borderRadius: BorderRadius.circular(24),
-                child: Container(
-                  padding: AppSpacing.paddingLg,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBF5),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFC4785A)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFC4785A),
-                          shape: BoxShape.circle,
+              Semantics(
+                button: true,
+                label: 'Unlock Smart AI',
+                child: InkWell(
+                  onTap: () => context.push(AppRoutes.addDish),
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    padding: AppSpacing.paddingLg,
+                    decoration: BoxDecoration(
+                      color: theme.scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: theme.colorScheme.primary),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(Icons.auto_awesome, color: theme.colorScheme.surface, size: 24),
                         ),
-                        alignment: Alignment.center,
-                        child: const Icon(Icons.auto_awesome, color: Color(0xFFFDF6E3), size: 24),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Unlock Smart AI', style: textStyles.bodyLarge?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.bold)),
-                            Text('Get precise ingredients for any dish instantly.', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
-                          ],
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Unlock Smart AI', style: textStyles.bodyLarge?.copyWith(color: theme.primaryText, fontWeight: FontWeight.bold)),
+                              Text('Get precise ingredients for any dish instantly.', style: textStyles.bodySmall?.copyWith(color: theme.secondaryText)),
+                            ],
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios, color: Color(0xFFC4785A), size: 16),
-                    ],
+                        Icon(Icons.arrow_forward_ios, color: theme.colorScheme.primary, size: 16),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -274,13 +289,20 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  BarChartGroupData _makeGroupData(int x, double y) {
+  static String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
+  BarChartGroupData _makeGroupData(int x, double y, Color barColor) {
     return BarChartGroupData(
       x: x,
       barRods: [
         BarChartRodData(
           toY: y,
-          color: const Color(0xFFC4785A),
+          color: barColor,
           width: 16,
           borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
         ),
@@ -289,82 +311,92 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildActionCard(BuildContext context, {required IconData icon, required Color iconBg, required Color iconColor, required String title, required String subtitle, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        padding: AppSpacing.paddingLg,
-        decoration: BoxDecoration(
-          color: const Color(0xFFFDF6E3),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFFE8DFD0)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF6B4423).withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(16)),
-              alignment: Alignment.center,
-              child: Icon(icon, color: iconColor, size: 24),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: const Color(0xFF4A3728))),
-            const SizedBox(height: AppSpacing.xs),
-            Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: const Color(0xFF8C7E6F)), maxLines: 2, overflow: TextOverflow.ellipsis),
-          ],
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: title,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: AppSpacing.paddingLg,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: theme.dividerColor),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              )
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(16)),
+                alignment: Alignment.center,
+                child: Icon(icon, color: iconColor, size: 24),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(title, style: theme.textTheme.titleMedium?.copyWith(color: theme.primaryText)),
+              const SizedBox(height: AppSpacing.xs),
+              Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: theme.secondaryText), maxLines: 2, overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildListPreview(BuildContext context, {required IconData icon, required Color color, required String name, required String details, required String price, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: AppSpacing.paddingMd,
-        decoration: BoxDecoration(
-          color: const Color(0xFFFDF6E3),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: const Color(0xFFE8DFD0)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(color: Color(0xFFFFFBF5), shape: BoxShape.circle),
-              alignment: Alignment.center,
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: 'Open $name',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+          padding: AppSpacing.paddingMd,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: theme.dividerColor),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(color: theme.scaffoldBackgroundColor, shape: BoxShape.circle),
+                alignment: Alignment.center,
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w600)),
+                    Text(details, style: theme.textTheme.labelSmall?.copyWith(color: theme.secondaryText)),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(name, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w600)),
-                  Text(details, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                  Text(price, style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryText, fontWeight: FontWeight.bold)),
+                  Icon(Icons.chevron_right, color: theme.hint, size: 16),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(price, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.bold)),
-                const Icon(Icons.chevron_right, color: Color(0xFFBDB2A7), size: 16),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

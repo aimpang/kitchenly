@@ -160,6 +160,7 @@ TextTheme _buildTextTheme(Color primaryColor, Color secondaryColor) {
   return TextTheme(
     headlineLarge: GoogleFonts.nunito(fontSize: 32, fontWeight: FontWeight.w700, height: 1.2, color: primaryColor),
     headlineMedium: GoogleFonts.nunito(fontSize: 26, fontWeight: FontWeight.w700, height: 1.25, color: primaryColor),
+    headlineSmall: GoogleFonts.nunito(fontSize: 22, fontWeight: FontWeight.w700, height: 1.25, color: primaryColor),
     titleLarge: GoogleFonts.nunito(fontSize: 22, fontWeight: FontWeight.w600, height: 1.3, color: primaryColor),
     titleMedium: GoogleFonts.nunito(fontSize: 17, fontWeight: FontWeight.w600, height: 1.4, color: primaryColor),
     titleSmall: GoogleFonts.nunito(fontSize: 14, fontWeight: FontWeight.w600, height: 1.4, color: primaryColor),

@@ -107,11 +107,12 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
   void _showMarkAsDonePrompt(GroceryList list) {
     if (_hasShownDonePrompt || list.isDone) return;
     _hasShownDonePrompt = true;
+    final theme = Theme.of(context);
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        icon: const Icon(Icons.check_circle_rounded, color: Color(0xFF8BA888), size: 48),
+        icon: Icon(Icons.check_circle_rounded, color: theme.success, size: 48),
         title: const Text('All items purchased!'),
         content: Text('Would you like to mark "${list.title}" as done?'),
         actions: [
@@ -129,12 +130,12 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
               ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(list.isShared ? 'Marked done — collaborators were notified' : 'Marked done'),
-                  backgroundColor: const Color(0xFF8BA888),
+                  content: Text(list.isShared ? 'Marked done — collaborators will see the update' : 'Marked done'),
+                  backgroundColor: theme.success,
                 ),
               );
             },
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF8BA888)),
+            style: FilledButton.styleFrom(backgroundColor: theme.success),
             child: const Text('Mark as Done'),
           ),
         ],
@@ -208,25 +209,28 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
+                  Expanded(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF4A3728)),
+                            icon: Icon(Icons.arrow_back_rounded, color: theme.primaryText),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             onPressed: () => context.pop(),
                           ),
                           const SizedBox(width: AppSpacing.sm),
-                          Text(activeList.title, style: textStyles.headlineMedium?.copyWith(color: const Color(0xFF4A3728))),
+                          Flexible(
+                            child: Text(activeList.title, style: textStyles.headlineMedium?.copyWith(color: theme.primaryText), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ),
                         ],
                       ),
                       if (activeList.isShared)
                         Padding(
                           padding: const EdgeInsets.only(left: 32.0),
-                          child: Text('Shared with ${activeList.collaborators.join(", ")}', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                          child: Text('Shared with ${activeList.collaborators.join(", ")}', style: textStyles.bodySmall?.copyWith(color: theme.secondaryText)),
                         ),
                       Padding(
                         padding: const EdgeInsets.only(left: 32.0, top: 8.0),
@@ -237,15 +241,16 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                       ),
                     ],
                   ),
+                  ),
                   Row(
                     children: [
                       IconButton(
                         tooltip: 'Scan receipt',
-                        icon: const Icon(Icons.document_scanner_rounded, color: Color(0xFFC4785A)),
+                        icon: Icon(Icons.document_scanner_rounded, color: theme.colorScheme.primary),
                         onPressed: _showReceiptScanSheet,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.person_add_outlined, color: Color(0xFFC4785A)),
+                        icon: Icon(Icons.person_add_outlined, color: theme.colorScheme.primary),
                         onPressed: () => context.push(AppRoutes.share),
                       ),
                       if (!activeList.isDone)
@@ -259,15 +264,15 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                                 ? FilledButton.icon(
                                     key: const ValueKey('mark_done_cta'),
                                     onPressed: () => _showMarkAsDonePrompt(activeList),
-                                    icon: const Icon(Icons.check_circle_rounded, color: Colors.white),
-                                    label: const Text('Done', style: TextStyle(color: Colors.white)),
-                                    style: FilledButton.styleFrom(backgroundColor: const Color(0xFF8BA888), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
+                                    icon: Icon(Icons.check_circle_rounded, color: theme.colorScheme.onPrimary),
+                                    label: Text('Done', style: TextStyle(color: theme.colorScheme.onPrimary)),
+                                    style: FilledButton.styleFrom(backgroundColor: theme.success, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
                                   )
                                 : const SizedBox.shrink(key: ValueKey('mark_done_cta_empty')),
                           ),
                         ),
                       PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF4A3728)),
+                        icon: Icon(Icons.more_vert_rounded, color: theme.primaryText),
                         onSelected: (value) {
                           if (value == 'done') {
                             showDialog(
@@ -284,8 +289,8 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                                       ScaffoldMessenger.of(context).clearSnackBars();
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text(activeList.isShared ? 'Marked done — collaborators were notified' : 'Marked done'),
-                                          backgroundColor: const Color(0xFF8BA888),
+                                          content: Text(activeList.isShared ? 'Marked done — collaborators will see the update' : 'Marked done'),
+                                          backgroundColor: theme.success,
                                         ),
                                       );
                                     },
@@ -308,7 +313,7 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                                       context.read<DataProvider>().removeList(activeList.id);
                                       context.pop();
                                     },
-                                    child: const Text('Delete', style: TextStyle(color: Color(0xFFD9534F))),
+                                    child: Text('Delete', style: TextStyle(color: theme.colorScheme.error)),
                                   ),
                                 ],
                               ),
@@ -344,7 +349,7 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                         itemBuilder: (context) => [
                           if (!activeList.isDone) const PopupMenuItem(value: 'done', child: Text('Mark as Done')),
                           const PopupMenuItem(value: 'rename', child: Text('Rename')),
-                          const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Color(0xFFD9534F)))),
+                          PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: theme.colorScheme.error))),
                         ],
                       ),
                     ],
@@ -358,20 +363,20 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF8BA888).withValues(alpha: 0.12),
+                    color: theme.success.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(color: const Color(0xFF8BA888).withValues(alpha: 0.35)),
+                    border: Border.all(color: theme.success.withValues(alpha: 0.35)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.verified_rounded, color: Color(0xFF8BA888)),
+                      Icon(Icons.verified_rounded, color: theme.success),
                       const SizedBox(width: AppSpacing.sm),
-                      Expanded(child: Text('Everything’s checked off. Mark this list as done?', style: textStyles.bodyMedium?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w600))),
+                      Expanded(child: Text(‘Everything\u2019s checked off. Mark this list as done?’, style: textStyles.bodyMedium?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w600))),
                       const SizedBox(width: AppSpacing.sm),
                       FilledButton(
                         onPressed: () => _showMarkAsDonePrompt(activeList),
-                        style: FilledButton.styleFrom(backgroundColor: const Color(0xFF8BA888), padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)),
-                        child: const Text('Mark done', style: TextStyle(color: Colors.white)),
+                        style: FilledButton.styleFrom(backgroundColor: theme.success, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)),
+                        child: Text(‘Mark done’, style: TextStyle(color: theme.colorScheme.onPrimary)),
                       ),
                     ],
                   ),
@@ -380,7 +385,7 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
 
             // Make receipt scan discoverable at the moment it matters:
             // when the user starts checking items off (or has purchased items).
-            if (!activeList.isDone && boughtItems.isNotEmpty)
+            if (!activeList.isDone && activeList.items.any((i) => i.isBought))
               Padding(
                 padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
                 child: _ReceiptScanCallout(onTap: _showReceiptScanSheet),
@@ -412,7 +417,7 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                     return Center(
                       child: Text(
                         'No items yet',
-                        style: textStyles.bodyMedium?.copyWith(color: const Color(0xFF8C7E6F)),
+                        style: textStyles.bodyMedium?.copyWith(color: theme.secondaryText),
                       ),
                     );
                   }
@@ -442,12 +447,12 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
             Container(
               padding: AppSpacing.paddingLg,
               decoration: BoxDecoration(
-                color: const Color(0xFFFDF6E3),
+                color: theme.colorScheme.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
                 border: Border(top: BorderSide(color: theme.dividerColor)),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6B4423).withValues(alpha: 0.1),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                     blurRadius: 24,
                     offset: const Offset(0, -8),
                   )
@@ -456,43 +461,50 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Estimated Total', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text('\$${activeList.boughtPrice.toStringAsFixed(2)}', style: textStyles.headlineSmall?.copyWith(color: const Color(0xFF4A3728))),
-                          const SizedBox(width: 4),
-                          Text('/ \$${activeList.totalPrice.toStringAsFixed(2)}', style: textStyles.bodySmall?.copyWith(color: const Color(0xFFBDB2A7))),
-                        ],
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Estimated Total', style: textStyles.bodySmall?.copyWith(color: theme.secondaryText)),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Flexible(child: Text('\$${activeList.boughtPrice.toStringAsFixed(2)}', style: textStyles.headlineSmall?.copyWith(color: theme.primaryText), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                            const SizedBox(width: 4),
+                            Text('/ \$${activeList.totalPrice.toStringAsFixed(2)}', style: textStyles.bodySmall?.copyWith(color: theme.hint)),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  InkWell(
-                    onTap: () => showQuickAddSheet(context),
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFC4785A),
-                        borderRadius: BorderRadius.circular(AppRadius.lg),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF6B4423).withValues(alpha: 0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          )
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.add_rounded, color: Color(0xFFFFFFFF), size: 20),
-                          const SizedBox(width: AppSpacing.sm),
-                          Text('Add Item', style: textStyles.labelLarge?.copyWith(color: const Color(0xFFFFFFFF))),
-                        ],
+                  const SizedBox(width: AppSpacing.md),
+                  Semantics(
+                    button: true,
+                    label: 'Add item',
+                    child: InkWell(
+                      onTap: () => showQuickAddSheet(context),
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.add_rounded, color: theme.colorScheme.onPrimary, size: 20),
+                            const SizedBox(width: AppSpacing.sm),
+                            Text('Add Item', style: textStyles.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -506,21 +518,23 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
   }
 
   Widget _buildCategoryChip(String label, bool selected) {
-    return GestureDetector(
+    final theme = Theme.of(context);
+    return InkWell(
       onTap: () => setState(() => _selectedCategory = label),
+      borderRadius: BorderRadius.circular(AppRadius.full),
       child: Container(
         margin: const EdgeInsets.only(right: AppSpacing.sm),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFC4785A) : const Color(0xFFFDF6E3),
+          color: selected ? theme.colorScheme.primary : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(color: selected ? Colors.transparent : const Color(0xFFE8DFD0)),
+          border: Border.all(color: selected ? Colors.transparent : theme.dividerColor),
         ),
         alignment: Alignment.center,
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: selected ? const Color(0xFFFFFFFF) : const Color(0xFF8C7E6F),
+          style: theme.textTheme.labelLarge?.copyWith(
+                color: selected ? theme.colorScheme.onPrimary : theme.secondaryText,
               ),
         ),
       ),
@@ -528,6 +542,7 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
   }
 
   Widget _buildGroceryItem(GroceryItem item, String listId, BuildContext context) {
+    final theme = Theme.of(context);
     final isBought = item.isBought;
     return Dismissible(
       // Keep the key stable across rebuilds. Changing keys (e.g. based on isBought)
@@ -538,10 +553,10 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         decoration: BoxDecoration(
-          color: const Color(0xFFE57373).withValues(alpha: 0.1),
+          color: theme.colorScheme.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFE57373)),
+        child: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error),
       ),
       onDismissed: (direction) {
         final provider = context.read<DataProvider>();
@@ -553,10 +568,10 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${item.name} removed'),
-            backgroundColor: const Color(0xFF4A3728),
+            backgroundColor: theme.primaryText,
             action: SnackBarAction(
               label: 'Undo',
-              textColor: const Color(0xFFFDF6E3),
+              textColor: theme.colorScheme.surface,
               onPressed: () {
                 provider.reAddItem(listId, item, originalIndex);
               },
@@ -568,14 +583,14 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: AppSpacing.paddingMd,
         decoration: BoxDecoration(
-          color: const Color(0xFFFDF6E3),
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: isBought ? Colors.transparent : const Color(0xFFE8DFD0)),
+          border: Border.all(color: isBought ? Colors.transparent : theme.dividerColor),
           boxShadow: isBought
               ? null
               : [
                   BoxShadow(
-                    color: const Color(0xFF6B4423).withValues(alpha: 0.05),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
@@ -586,9 +601,10 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
             IconButton(
               icon: Icon(
                 isBought ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                color: isBought ? const Color(0xFF8BA888) : const Color(0xFF8C7E6F),
+                color: isBought ? theme.success : theme.secondaryText,
                 size: 28,
               ),
+              tooltip: isBought ? 'Mark as not bought' : 'Mark as bought',
               onPressed: () => _handleItemToggle(listId, item.id),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -598,14 +614,14 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                 children: [
                   Text(
                     item.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: isBought ? const Color(0xFF8C7E6F) : const Color(0xFF4A3728),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                          color: isBought ? theme.secondaryText : theme.primaryText,
                           decoration: isBought ? TextDecoration.lineThrough : null,
                         ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (!isBought) Text(item.category, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                  if (!isBought) Text(item.category, style: theme.textTheme.labelSmall?.copyWith(color: theme.secondaryText)),
                 ],
               ),
             ),
@@ -616,14 +632,16 @@ class _ActiveListScreenState extends State<ActiveListScreen> {
                 width: 60,
                 child: Text(
                   '\$${(item.price * item.qty).toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w600),
+                  style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w600),
                   textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
             if (isBought)
               IconButton(
-                icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFF8C7E6F), size: 20),
+                icon: Icon(Icons.delete_outline_rounded, color: theme.secondaryText, size: 20),
                 onPressed: () => context.read<DataProvider>().removeItem(listId, item.id),
               ),
           ],
@@ -664,11 +682,11 @@ class _ActiveListHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final textStyles = theme.textTheme;
     if (!showDivider) {
-      return Text(title, style: textStyles.labelLarge?.copyWith(color: const Color(0xFF8C7E6F)));
+      return Text(title, style: textStyles.labelLarge?.copyWith(color: theme.secondaryText));
     }
     return Row(
       children: [
-        Text(title, style: textStyles.labelLarge?.copyWith(color: const Color(0xFF8C7E6F))),
+        Text(title, style: textStyles.labelLarge?.copyWith(color: theme.secondaryText)),
         const SizedBox(width: AppSpacing.sm),
         Expanded(child: Divider(color: theme.dividerColor)),
       ],
@@ -730,16 +748,16 @@ class _ServingsInputState extends State<_ServingsInput> {
       curve: Curves.easeOutCubic,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFFDF6E3),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(color: _errorText == null ? const Color(0xFFE8DFD0) : const Color(0xFFE57373)),
+        border: Border.all(color: _errorText == null ? theme.dividerColor : theme.colorScheme.error),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.people_alt_rounded, size: 16, color: Color(0xFF8C7E6F)),
+          Icon(Icons.people_alt_rounded, size: 16, color: theme.secondaryText),
           const SizedBox(width: 8),
-          Text('Servings', style: theme.textTheme.labelMedium?.copyWith(color: const Color(0xFF8C7E6F))),
+          Text('Servings', style: theme.textTheme.labelMedium?.copyWith(color: theme.secondaryText)),
           const SizedBox(width: 10),
           SizedBox(
             width: 44,
@@ -749,7 +767,7 @@ class _ServingsInputState extends State<_ServingsInput> {
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _commit(),
               onEditingComplete: _commit,
-              style: theme.textTheme.labelLarge?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w800),
+              style: theme.textTheme.labelLarge?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w800),
               decoration: InputDecoration(
                 isDense: true,
                 hintText: '2',
@@ -757,18 +775,18 @@ class _ServingsInputState extends State<_ServingsInput> {
                 errorStyle: const TextStyle(height: 0.01, fontSize: 0),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 filled: true,
-                fillColor: const Color(0xFFFFFBF5),
+                fillColor: theme.scaffoldBackgroundColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.full),
-                  borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                  borderSide: BorderSide(color: theme.dividerColor),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.full),
-                  borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                  borderSide: BorderSide(color: theme.dividerColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.full),
-                  borderSide: const BorderSide(color: Color(0xFFC4785A)),
+                  borderSide: BorderSide(color: theme.colorScheme.primary),
                 ),
               ),
               textAlign: TextAlign.center,
@@ -794,18 +812,18 @@ class _ReceiptScanCallout extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: const Color(0xFFC4785A).withValues(alpha: 0.10),
+          color: theme.colorScheme.primary.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: const Color(0xFFC4785A).withValues(alpha: 0.25)),
+          border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
             Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(color: const Color(0xFFC4785A).withValues(alpha: 0.16), borderRadius: BorderRadius.circular(AppRadius.md)),
+              decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(AppRadius.md)),
               alignment: Alignment.center,
-              child: const Icon(Icons.document_scanner_rounded, color: Color(0xFFC4785A), size: 20),
+              child: Icon(Icons.document_scanner_rounded, color: theme.colorScheme.primary, size: 20),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -814,7 +832,7 @@ class _ReceiptScanCallout extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text('Scan receipt', style: textStyles.titleSmall?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w800))),
+                      Expanded(child: Text('Scan receipt', style: textStyles.titleSmall?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w800))),
                       const SizedBox(width: AppSpacing.sm),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -828,12 +846,12 @@ class _ReceiptScanCallout extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text('Auto-fill prices from your receipt (optional).', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                  Text('Auto-fill prices from your receipt (optional).', style: textStyles.bodySmall?.copyWith(color: theme.secondaryText)),
                 ],
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFF8C7E6F)),
+            Icon(Icons.chevron_right_rounded, color: theme.secondaryText),
           ],
         ),
       ),
@@ -899,32 +917,34 @@ class _QuantityControlState extends State<_QuantityControl> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final item = widget.item;
     if (item.isToTaste) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(color: const Color(0xFFFFFBF5), borderRadius: BorderRadius.circular(AppRadius.md)),
-        child: Text('to taste', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: const Color(0xFF8C7E6F))),
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        child: Text('to taste', style: theme.textTheme.labelLarge?.copyWith(color: theme.secondaryText)),
       );
     }
 
-    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF5),
+        color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: _errorText == null ? const Color(0xFFE8DFD0) : const Color(0xFFE57373)),
+        border: Border.all(color: _errorText == null ? theme.dividerColor : theme.colorScheme.error),
       ),
       child: Row(
         children: [
-          InkWell(
-            onTap: () => context.read<DataProvider>().adjustItemQty(widget.listId, item.id, -1),
-            borderRadius: BorderRadius.circular(AppRadius.full),
-            child: const Padding(
-              padding: EdgeInsets.all(2),
-              child: Icon(Icons.remove_rounded, size: 16, color: Color(0xFFC4785A)),
-            ),
+          IconButton(
+            onPressed: () => context.read<DataProvider>().adjustItemQty(widget.listId, item.id, -1),
+            icon: Icon(Icons.remove_rounded, size: 16, color: theme.colorScheme.primary),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            padding: EdgeInsets.zero,
+            splashRadius: 18,
           ),
           const SizedBox(width: 8),
           Row(
@@ -938,7 +958,7 @@ class _QuantityControlState extends State<_QuantityControl> {
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _commit(),
                   onEditingComplete: _commit,
-                  style: theme.textTheme.labelLarge?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w900),
+                  style: theme.textTheme.labelLarge?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w900),
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: '1',
@@ -946,28 +966,27 @@ class _QuantityControlState extends State<_QuantityControl> {
                     errorStyle: const TextStyle(height: 0.01, fontSize: 0),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     filled: true,
-                    fillColor: const Color(0xFFFFFBF5),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: const BorderSide(color: Color(0xFFE8DFD0))),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: const BorderSide(color: Color(0xFFE8DFD0))),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: const BorderSide(color: Color(0xFFC4785A))),
+                    fillColor: theme.scaffoldBackgroundColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: BorderSide(color: theme.dividerColor)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: BorderSide(color: theme.dividerColor)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: BorderSide(color: theme.colorScheme.primary)),
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
               if (item.unit.trim().isNotEmpty) ...[
                 const SizedBox(width: 6),
-                Text(item.unit, style: theme.textTheme.labelMedium?.copyWith(color: const Color(0xFF8C7E6F), fontWeight: FontWeight.w800)),
+                Text(item.unit, style: theme.textTheme.labelMedium?.copyWith(color: theme.secondaryText, fontWeight: FontWeight.w800), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ],
           ),
           const SizedBox(width: 8),
-          InkWell(
-            onTap: () => context.read<DataProvider>().adjustItemQty(widget.listId, item.id, 1),
-            borderRadius: BorderRadius.circular(AppRadius.full),
-            child: const Padding(
-              padding: EdgeInsets.all(2),
-              child: Icon(Icons.add_rounded, size: 16, color: Color(0xFFC4785A)),
-            ),
+          IconButton(
+            onPressed: () => context.read<DataProvider>().adjustItemQty(widget.listId, item.id, 1),
+            icon: Icon(Icons.add_rounded, size: 16, color: theme.colorScheme.primary),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            padding: EdgeInsets.zero,
+            splashRadius: 18,
           ),
         ],
       ),

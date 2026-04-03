@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'theme.dart';
 import 'nav.dart';
@@ -9,6 +10,7 @@ import 'providers/data_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  GoogleFonts.config.allowRuntimeFetching = false;
   runApp(const MyApp());
 }
 
@@ -58,7 +60,7 @@ class _MyAppState extends State<MyApp> {
         scrollBehavior: const AppScrollBehavior(),
         theme: lightTheme,
         darkTheme: darkTheme,
-        themeMode: ThemeMode.light,
+        themeMode: ThemeMode.system,
         routerConfig: _router,
       ),
     );

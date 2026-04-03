@@ -104,6 +104,9 @@ class GroceryList {
 class DataProvider extends ChangeNotifier {
   String? _activeListId;
 
+  SharedPreferences? _prefsCache;
+  Future<SharedPreferences> get _prefs async => _prefsCache ??= await SharedPreferences.getInstance();
+
   // Using time-only IDs can collide when multiple items are created in a tight loop
   // (e.g. mapping a batch of quick-add inputs). Add a counter + random suffix.
   final Random _idRand = Random();
@@ -215,6 +218,7 @@ class DataProvider extends ChangeNotifier {
 
   List<GroceryList> get myLists => _myLists;
   List<GroceryList> get sharedLists => _sharedLists;
+  Iterable<GroceryList> get allLists => _myLists.followedBy(_sharedLists);
 
   bool get priceBookLoaded => _priceBookLoaded;
 
@@ -233,7 +237,7 @@ class DataProvider extends ChangeNotifier {
 
   GroceryList? get activeList {
     if (_activeListId == null) return null;
-    for (final list in [..._myLists, ..._sharedLists]) {
+    for (final list in allLists) {
       if (list.id == _activeListId) return list;
     }
     return null;
@@ -298,7 +302,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   void toggleItemBought(String listId, String itemId) {
-    for (var list in [..._myLists, ..._sharedLists]) {
+    for (var list in allLists) {
       if (list.id == listId) {
         for (var item in list.items) {
           if (item.id == itemId) {
@@ -312,7 +316,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   void adjustItemQty(String listId, String itemId, int delta) {
-    for (final list in [..._myLists, ..._sharedLists]) {
+    for (final list in allLists) {
       if (list.id != listId) continue;
       final factor = list.servings / list.baseServings;
       for (int i = 0; i < list.items.length; i++) {
@@ -339,7 +343,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   void setItemQty(String listId, String itemId, double qty) {
-    for (final list in [..._myLists, ..._sharedLists]) {
+    for (final list in allLists) {
       if (list.id != listId) continue;
       final factor = list.servings / list.baseServings;
       for (int i = 0; i < list.items.length; i++) {
@@ -424,7 +428,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   void removeItem(String listId, String itemId) {
-    for (var list in [..._myLists, ..._sharedLists]) {
+    for (var list in allLists) {
       if (list.id == listId) {
         list.items.removeWhere((item) => item.id == itemId);
         notifyListeners();
@@ -454,7 +458,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   void renameList(String listId, String newTitle) {
-    for (final list in [..._myLists, ..._sharedLists]) {
+    for (final list in allLists) {
       if (list.id == listId) {
         // GroceryList.title is final, so we need to replace the list
         final index = _myLists.indexWhere((l) => l.id == listId);
@@ -540,7 +544,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   void addItemToList(String listId, GroceryItem item) {
-    for (final list in [..._myLists, ..._sharedLists]) {
+    for (final list in allLists) {
       if (list.id == listId) {
         list.items.add(item);
         notifyListeners();
@@ -550,7 +554,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   void addItemsToList(String listId, List<GroceryItem> items) {
-    for (final list in [..._myLists, ..._sharedLists]) {
+    for (final list in allLists) {
       if (list.id == listId) {
         list.items.addAll(items);
         notifyListeners();
@@ -560,7 +564,7 @@ class DataProvider extends ChangeNotifier {
   }
 
   void reAddItem(String listId, GroceryItem item, int index) {
-    for (final list in [..._myLists, ..._sharedLists]) {
+    for (final list in allLists) {
       if (list.id == listId) {
         final clampedIndex = index.clamp(0, list.items.length);
         list.items.insert(clampedIndex, item);
@@ -588,7 +592,7 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> _loadPriceBook() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _prefs;
       final rawList = prefs.getStringList(_priceBookPrefsKey);
       _priceBook.clear();
 
@@ -637,7 +641,7 @@ class DataProvider extends ChangeNotifier {
 
   Future<void> _persistPriceBook() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _prefs;
       final raw = _priceBook.values.map((e) => _encodeMapToJson(e.toJson())).toList();
       await prefs.setStringList(_priceBookPrefsKey, raw);
     } catch (e) {
@@ -687,7 +691,7 @@ class DataProvider extends ChangeNotifier {
   /// explore the UI without any backend connected.
   GroceryList createListFromDish({required String dishName, bool useSmartAi = true}) {
     final normalized = dishName.trim();
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final id = generateId();
     final items = _itemsForDish(normalized, useSmartAi: useSmartAi);
     final list = GroceryList(
       id: id,

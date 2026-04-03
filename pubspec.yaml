@@ -11,7 +11,6 @@ dependencies:
   shared_preferences: any
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   google_fonts: any
   provider: any
   go_router: ^16.2.0
@@ -24,6 +23,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito[wght].ttf
+        - asset: assets/fonts/Nunito-Italic[wght].ttf
+          style: italic
 
 flutter_launcher_icons:
   android: true

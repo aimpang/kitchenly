@@ -7,12 +7,13 @@ import '../providers/data_provider.dart';
 
 /// Opens the Quick Add experience as a modal bottom sheet.
 ///
-/// This replaces the previous full-page route so Quick Add stays “quick”.
+/// This replaces the previous full-page route so Quick Add stays "quick".
 void showQuickAddSheet(BuildContext context) {
+  final theme = Theme.of(context);
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: const Color(0xFFFDF6E3),
+    backgroundColor: theme.colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -38,6 +39,7 @@ class _QuickAddSheetScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SafeArea(
       top: false,
       child: Column(
@@ -48,7 +50,7 @@ class _QuickAddSheetScaffold extends StatelessWidget {
             width: 44,
             height: 5,
             decoration: BoxDecoration(
-              color: const Color(0xFF8C7E6F).withValues(alpha: 0.35),
+              color: theme.secondaryText.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(999),
             ),
           ),
@@ -165,7 +167,7 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textStyles = theme.textTheme;
-    final activeList = context.watch<DataProvider>().activeList;
+    final activeList = context.select<DataProvider, GroceryList?>((p) => p.activeList);
     final buttonLabel = activeList != null
         ? 'Add to ${activeList.title} (${_addedItems.length} items)'
         : 'Review List (${_addedItems.length} items)';
@@ -179,15 +181,15 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: const Icon(Icons.close_rounded, color: Color(0xFF4A3728)),
+                icon: Icon(Icons.close_rounded, color: theme.primaryText),
                 onPressed: () => context.pop(),
               ),
-              Text('Quick Add', style: textStyles.titleLarge?.copyWith(color: const Color(0xFF4A3728))),
+              Text('Quick Add', style: textStyles.titleLarge?.copyWith(color: theme.primaryText)),
               IconButton(
-                icon: const Icon(Icons.history_rounded, color: Color(0xFF8C7E6F)),
+                icon: Icon(Icons.history_rounded, color: theme.secondaryText),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Purchase history coming soon!'), backgroundColor: Color(0xFFC4785A)),
+                    SnackBar(content: const Text('Purchase history coming soon!'), backgroundColor: theme.colorScheme.primary),
                   );
                 },
               ),
@@ -203,12 +205,12 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                     Container(
                       padding: AppSpacing.paddingXl,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFDF6E3),
+                        color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(AppRadius.xl),
-                        border: Border.all(color: const Color(0xFFE8DFD0)),
+                        border: Border.all(color: theme.dividerColor),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF6B4423).withValues(alpha: 0.1),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           )
@@ -216,54 +218,58 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                       ),
                       child: Column(
                         children: [
-                          Text('What\'s on your list?', style: textStyles.headlineMedium?.copyWith(color: const Color(0xFF4A3728)), textAlign: TextAlign.center),
+                          Text('What\'s on your list?', style: textStyles.headlineMedium?.copyWith(color: theme.primaryText), textAlign: TextAlign.center),
                           const SizedBox(height: AppSpacing.lg),
-                          Text('Tap the mic and say things like "6 organic eggs" or "a gallon of whole milk"', style: textStyles.bodyMedium?.copyWith(color: const Color(0xFF8C7E6F)), textAlign: TextAlign.center),
+                          Text('Tap the mic and say things like "6 organic eggs" or "a gallon of whole milk"', style: textStyles.bodyMedium?.copyWith(color: theme.secondaryText), textAlign: TextAlign.center),
                           const SizedBox(height: AppSpacing.lg),
-                          GestureDetector(
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Voice input coming soon!'), backgroundColor: Color(0xFFC4785A)),
-                              );
-                            },
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 100,
-                                  height: 100,
-                                  decoration: BoxDecoration(color: const Color(0xFFC4785A).withValues(alpha: 0.13), shape: BoxShape.circle),
-                                ),
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(color: const Color(0xFFC4785A).withValues(alpha: 0.27), shape: BoxShape.circle),
-                                ),
-                                Container(
-                                  width: 64,
-                                  height: 64,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFC4785A),
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF6B4423).withValues(alpha: 0.1),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      )
-                                    ],
+                          Semantics(
+                            button: true,
+                            label: 'Voice input',
+                            child: GestureDetector(
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: const Text('Voice input coming soon!'), backgroundColor: theme.colorScheme.primary),
+                                );
+                              },
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 100,
+                                    decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.13), shape: BoxShape.circle),
                                   ),
-                                  alignment: Alignment.center,
-                                  child: const Icon(Icons.mic_rounded, color: Color(0xFFFFFFFF), size: 32),
-                                ),
-                              ],
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.27), shape: BoxShape.circle),
+                                  ),
+                                  Container(
+                                    width: 64,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 4),
+                                        )
+                                      ],
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Icon(Icons.mic_rounded, color: theme.colorScheme.onPrimary, size: 32),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xl),
-                    Text('Or type items manually', style: textStyles.labelLarge?.copyWith(color: const Color(0xFF8C7E6F))),
+                    Text('Or type items manually', style: textStyles.labelLarge?.copyWith(color: theme.secondaryText)),
                     const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
@@ -281,6 +287,7 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                               _addItem(selection);
                             },
                             fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                              final theme = Theme.of(context);
                               _activeController = controller;
                               return TextField(
                                 controller: controller,
@@ -288,14 +295,14 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                                 decoration: InputDecoration(
                                   hintText: 'e.g. Bananas, Bread...',
                                   filled: true,
-                                  fillColor: const Color(0xFFFDF6E3),
+                                  fillColor: theme.colorScheme.surface,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                                    borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                                    borderSide: BorderSide(color: theme.dividerColor),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                                    borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                                    borderSide: BorderSide(color: theme.dividerColor),
                                   ),
                                 ),
                                 onSubmitted: (value) {
@@ -305,15 +312,18 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                               );
                             },
                             optionsViewBuilder: (context, onSelected, options) {
+                              final theme = Theme.of(context);
                               return Align(
                                 alignment: Alignment.topLeft,
                                 child: Material(
                                   elevation: 4.0,
                                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                                  color: const Color(0xFFFDF6E3),
+                                  color: theme.colorScheme.surface,
                                   child: Container(
-                                    width: MediaQuery.of(context).size.width - (AppSpacing.lg * 2) - 72,
-                                    constraints: const BoxConstraints(maxHeight: 200),
+                                    constraints: BoxConstraints(
+                                      maxHeight: 200,
+                                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                    ),
                                     child: ListView.builder(
                                       padding: EdgeInsets.zero,
                                       shrinkWrap: true,
@@ -324,7 +334,7 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                                           onTap: () => onSelected(option),
                                           child: Padding(
                                             padding: const EdgeInsets.all(16.0),
-                                            child: Text(option, style: textStyles.bodyMedium?.copyWith(color: const Color(0xFF4A3728))),
+                                            child: Text(option, style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryText)),
                                           ),
                                         );
                                       },
@@ -336,25 +346,29 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                           ),
                         ),
                         const SizedBox(width: AppSpacing.md),
-                        InkWell(
-                          onTap: _addItem,
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
-                          child: Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFC4785A),
-                              borderRadius: BorderRadius.circular(AppRadius.lg),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF6B4423).withValues(alpha: 0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                )
-                              ],
+                        Semantics(
+                          button: true,
+                          label: 'Add item',
+                          child: InkWell(
+                            onTap: _addItem,
+                            borderRadius: BorderRadius.circular(AppRadius.lg),
+                            child: Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(AppRadius.lg),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  )
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: Icon(Icons.send_rounded, color: theme.colorScheme.onPrimary),
                             ),
-                            alignment: Alignment.center,
-                            child: const Icon(Icons.send_rounded, color: Color(0xFFFFFFFF)),
                           ),
                         ),
                       ],
@@ -363,10 +377,10 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Added just now', style: textStyles.titleMedium?.copyWith(color: const Color(0xFF4A3728))),
+                        Text('Added just now', style: textStyles.titleMedium?.copyWith(color: theme.primaryText)),
                         TextButton(
                           onPressed: () => setState(() => _addedItems.clear()),
-                          child: Text('Clear all', style: textStyles.labelMedium?.copyWith(color: const Color(0xFFC4785A))),
+                          child: Text('Clear all', style: textStyles.labelMedium?.copyWith(color: theme.colorScheme.primary)),
                         ),
                       ],
                     ),
@@ -374,7 +388,7 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                     if (_addedItems.isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                        child: Text('No items added yet. Type or speak to add items.', style: textStyles.bodySmall?.copyWith(color: const Color(0xFFBDB2A7)), textAlign: TextAlign.center),
+                        child: Text('No items added yet. Type or speak to add items.', style: textStyles.bodySmall?.copyWith(color: theme.hint), textAlign: TextAlign.center),
                       )
                     else
                       Wrap(
@@ -385,7 +399,7 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                         }).toList(),
                       ),
                     const SizedBox(height: AppSpacing.xl),
-                    Text('Frequently added', style: textStyles.titleMedium?.copyWith(color: const Color(0xFF4A3728))),
+                    Text('Frequently added', style: textStyles.titleMedium?.copyWith(color: theme.primaryText)),
                     const SizedBox(height: AppSpacing.md),
                     _buildSuggestion(context, Icons.add_circle_outline_rounded, 'Fresh Produce', 'Apples, Spinach, Tomatoes'),
                     _buildSuggestion(context, Icons.add_circle_outline_rounded, 'Pantry Essentials', 'Coffee, Olive Oil, Sea Salt'),
@@ -397,9 +411,9 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
             ),
         Container(
           padding: AppSpacing.paddingLg,
-          decoration: const BoxDecoration(
-            color: Color(0xFFFFFBF5),
-            border: Border(top: BorderSide(color: Color(0xFFE8DFD0))),
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            border: Border(top: BorderSide(color: theme.dividerColor)),
           ),
           child: InkWell(
             onTap: _addedItems.isEmpty ? null : _submitItems,
@@ -407,16 +421,16 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
             child: Container(
               height: 56,
               decoration: BoxDecoration(
-                color: _addedItems.isEmpty ? const Color(0xFFBDB2A7) : const Color(0xFFC4785A),
+                color: _addedItems.isEmpty ? theme.hint : theme.colorScheme.primary,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(buttonLabel, style: textStyles.titleMedium?.copyWith(color: const Color(0xFFFFFFFF))),
+                  Flexible(child: Text(buttonLabel, style: textStyles.titleMedium?.copyWith(color: theme.colorScheme.onPrimary), maxLines: 1, overflow: TextOverflow.ellipsis)),
                   const SizedBox(width: AppSpacing.sm),
-                  const Icon(Icons.arrow_forward_rounded, color: Color(0xFFFFFFFF)),
+                  Icon(Icons.arrow_forward_rounded, color: theme.colorScheme.onPrimary),
                 ],
               ),
             ),
@@ -427,21 +441,22 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
   }
 
   Widget _buildInputChip(String label, VoidCallback onRemove, BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: const Color(0xFFFDF6E3),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(color: const Color(0xFFE8DFD0)),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: const Color(0xFF4A3728))),
+          Text(label, style: theme.textTheme.bodySmall?.copyWith(color: theme.primaryText)),
           const SizedBox(width: AppSpacing.xs),
           InkWell(
             onTap: onRemove,
-            child: const Icon(Icons.close_rounded, size: 14, color: Color(0xFF8C7E6F)),
+            child: Icon(Icons.close_rounded, size: 14, color: theme.secondaryText),
           ),
         ],
       ),
@@ -449,37 +464,42 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
   }
 
   Widget _buildSuggestion(BuildContext context, IconData icon, String title, String subtitle) {
-    return GestureDetector(
-      onTap: () => _addSuggestionItems(title, subtitle),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-        padding: AppSpacing.paddingMd,
-        decoration: BoxDecoration(
-          color: const Color(0xFFFDF6E3),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: const Color(0xFFE8DFD0)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(color: const Color(0xFFFDF6E3), borderRadius: BorderRadius.circular(AppRadius.md)),
-              alignment: Alignment.center,
-              child: Icon(icon, color: const Color(0xFFC4785A), size: 20),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A3728), fontWeight: FontWeight.w600)),
-                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
-                ],
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: 'Add $title items: $subtitle',
+      child: GestureDetector(
+        onTap: () => _addSuggestionItems(title, subtitle),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
+          padding: AppSpacing.paddingMd,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: theme.dividerColor),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(AppRadius.md)),
+                alignment: Alignment.center,
+                child: Icon(icon, color: theme.colorScheme.primary, size: 20),
               ),
-            ),
-            const Icon(Icons.add_circle_outline_rounded, color: Color(0xFFC4785A), size: 20),
-          ],
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryText, fontWeight: FontWeight.w600)),
+                    Text(subtitle, style: theme.textTheme.bodySmall?.copyWith(color: theme.secondaryText)),
+                  ],
+                ),
+              ),
+              Icon(Icons.add_circle_outline_rounded, color: theme.colorScheme.primary, size: 20),
+            ],
+          ),
         ),
       ),
     );

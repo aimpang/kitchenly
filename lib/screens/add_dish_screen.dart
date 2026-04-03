@@ -68,7 +68,7 @@ class _AddDishScreenState extends State<AddDishScreen> {
     final textStyles = theme.textTheme;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppSpacing.paddingLg,
@@ -79,11 +79,11 @@ class _AddDishScreenState extends State<AddDishScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF4A3728)),
+                    icon: Icon(Icons.arrow_back_rounded, color: theme.primaryText),
                     onPressed: () => context.pop(),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.help_outline_rounded, color: Color(0xFF8C7E6F)),
+                    icon: Icon(Icons.help_outline_rounded, color: theme.secondaryText),
                     onPressed: () {
                       showDialog(
                         context: context,
@@ -100,18 +100,18 @@ class _AddDishScreenState extends State<AddDishScreen> {
                 ],
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text('What\'s on the menu?', style: textStyles.headlineMedium?.copyWith(color: const Color(0xFF4A3728))),
+              Text('What\'s on the menu?', style: textStyles.headlineMedium?.copyWith(color: theme.primaryText)),
               const SizedBox(height: AppSpacing.xs),
-              Text('Enter a dish name and we\'ll help you find the ingredients.', style: textStyles.bodyLarge?.copyWith(color: const Color(0xFF8C7E6F))),
+              Text('Enter a dish name and we\'ll help you find the ingredients.', style: textStyles.bodyLarge?.copyWith(color: theme.secondaryText)),
               const SizedBox(height: AppSpacing.xl),
               Container(
                 padding: AppSpacing.paddingLg,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFDF6E3),
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6B4423).withValues(alpha: 0.1),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     )
@@ -120,7 +120,7 @@ class _AddDishScreenState extends State<AddDishScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Dish Name', style: textStyles.labelLarge?.copyWith(color: const Color(0xFF4A3728))),
+                    Text('Dish Name', style: textStyles.labelLarge?.copyWith(color: theme.primaryText)),
                     const SizedBox(height: AppSpacing.sm),
                     Autocomplete<String>(
                       optionsBuilder: (value) => _rankedDishOptions(value.text),
@@ -131,6 +131,7 @@ class _AddDishScreenState extends State<AddDishScreen> {
                         _generateForDish(context, dish);
                       },
                       fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                        final theme = Theme.of(context);
                         _dishController ??= textEditingController;
 
                         return TextField(
@@ -141,15 +142,15 @@ class _AddDishScreenState extends State<AddDishScreen> {
                           decoration: InputDecoration(
                             hintText: 'e.g. Lemon Garlic Butter Salmon',
                             filled: true,
-                            fillColor: const Color(0xFFFFFBF5),
-                            prefixIcon: const Icon(Icons.restaurant_menu_rounded, color: Color(0xFFC4785A)),
+                            fillColor: theme.scaffoldBackgroundColor,
+                            prefixIcon: Icon(Icons.restaurant_menu_rounded, color: theme.colorScheme.primary),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(AppRadius.lg),
-                              borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                              borderSide: BorderSide(color: theme.dividerColor),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(AppRadius.lg),
-                              borderSide: const BorderSide(color: Color(0xFFE8DFD0)),
+                              borderSide: BorderSide(color: theme.dividerColor),
                             ),
                           ),
                         );
@@ -164,12 +165,12 @@ class _AddDishScreenState extends State<AddDishScreen> {
                               margin: const EdgeInsets.only(top: 8),
                               constraints: const BoxConstraints(maxHeight: 260, maxWidth: 520),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFFBF5),
+                                color: theme.scaffoldBackgroundColor,
                                 borderRadius: BorderRadius.circular(AppRadius.lg),
-                                border: Border.all(color: const Color(0xFFE8DFD0)),
+                                border: Border.all(color: theme.dividerColor),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF6B4423).withValues(alpha: 0.08),
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
                                     blurRadius: 18,
                                     offset: const Offset(0, 10),
                                   )
@@ -179,7 +180,7 @@ class _AddDishScreenState extends State<AddDishScreen> {
                                 padding: const EdgeInsets.symmetric(vertical: 8),
                                 shrinkWrap: true,
                                 itemCount: options.length,
-                                separatorBuilder: (_, __) => Divider(height: 1, color: const Color(0xFFE8DFD0).withValues(alpha: 0.6)),
+                                separatorBuilder: (_, __) => Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.6)),
                                 itemBuilder: (context, index) {
                                   final dish = options.elementAt(index);
                                   return InkWell(
@@ -188,18 +189,18 @@ class _AddDishScreenState extends State<AddDishScreen> {
                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.auto_awesome_rounded, size: 18, color: Color(0xFFC4785A)),
+                                          Icon(Icons.auto_awesome_rounded, size: 18, color: theme.colorScheme.primary),
                                           const SizedBox(width: 10),
                                           Expanded(
                                             child: Text(
                                               dish,
-                                              style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A3728)),
+                                              style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryText),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                           const SizedBox(width: 10),
-                                          Text('Generate', style: theme.textTheme.labelMedium?.copyWith(color: const Color(0xFF8C7E6F))),
+                                          Text('Generate', style: theme.textTheme.labelMedium?.copyWith(color: theme.secondaryText)),
                                         ],
                                       ),
                                     ),
@@ -215,18 +216,18 @@ class _AddDishScreenState extends State<AddDishScreen> {
                     Container(
                       padding: AppSpacing.paddingMd,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFFBF5),
+                        color: theme.scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(AppRadius.lg),
-                        border: Border.all(color: const Color(0xFFFDF6E3)),
+                        border: Border.all(color: theme.colorScheme.surface),
                       ),
                       child: Row(
                         children: [
                           Container(
                             width: 48,
                             height: 48,
-                            decoration: const BoxDecoration(color: Color(0xFFFFF5F0), shape: BoxShape.circle),
+                            decoration: BoxDecoration(color: theme.accent.withValues(alpha: 0.1), shape: BoxShape.circle),
                             alignment: Alignment.center,
-                            child: const Icon(Icons.psychology_rounded, color: Color(0xFFF08080), size: 28),
+                            child: Icon(Icons.psychology_rounded, color: theme.accent, size: 28),
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
@@ -238,18 +239,18 @@ class _AddDishScreenState extends State<AddDishScreen> {
                                   runSpacing: 6,
                                   crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
-                                    Text('Use Smart AI', style: textStyles.titleMedium?.copyWith(color: const Color(0xFF4A3728))),
+                                    Text('Use Smart AI', style: textStyles.titleMedium?.copyWith(color: theme.primaryText)),
                                     _buildPremiumBadge(context),
                                   ],
                                 ),
                                 const SizedBox(height: 2),
-                                Text('Get precise quantities & substitutions', style: textStyles.bodySmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                                Text('Get precise quantities & substitutions', style: textStyles.bodySmall?.copyWith(color: theme.secondaryText)),
                               ],
                             ),
                           ),
                           Switch(
                             value: _useSmartAi,
-                            activeColor: const Color(0xFFF08080),
+                            activeColor: theme.accent,
                             onChanged: (val) => setState(() => _useSmartAi = val),
                           ),
                         ],
@@ -261,9 +262,9 @@ class _AddDishScreenState extends State<AddDishScreen> {
               const SizedBox(height: AppSpacing.xl),
               Row(
                 children: [
-                  const Icon(Icons.local_fire_department_rounded, color: Color(0xFFC4785A), size: 20),
+                  Icon(Icons.local_fire_department_rounded, color: theme.colorScheme.primary, size: 20),
                   const SizedBox(width: AppSpacing.sm),
-                  Text('Popular right now', style: textStyles.titleSmall?.copyWith(color: const Color(0xFF8C7E6F))),
+                  Text('Popular right now', style: textStyles.titleSmall?.copyWith(color: theme.secondaryText)),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
@@ -279,35 +280,39 @@ class _AddDishScreenState extends State<AddDishScreen> {
                 ],
               ),
               const SizedBox(height: 60),
-              InkWell(
-                onTap: () => _generateForDish(context, _dishText),
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                child: Container(
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFC4785A),
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFC4785A).withValues(alpha: 0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      )
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Generate Grocery List', style: textStyles.titleMedium?.copyWith(color: const Color(0xFFFFFFFF))),
-                      const SizedBox(width: AppSpacing.md),
-                      const Icon(Icons.auto_fix_high_rounded, color: Color(0xFFFFFFFF), size: 20),
-                    ],
+              Semantics(
+                button: true,
+                label: 'Generate grocery list',
+                child: InkWell(
+                  onTap: () => _generateForDish(context, _dishText),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  child: Container(
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 8),
+                        )
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Generate Grocery List', style: textStyles.titleMedium?.copyWith(color: theme.colorScheme.onPrimary)),
+                        const SizedBox(width: AppSpacing.md),
+                        Icon(Icons.auto_fix_high_rounded, color: theme.colorScheme.onPrimary, size: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('AI estimates may vary based on local store availability', style: textStyles.bodySmall?.copyWith(color: const Color(0xFFBDB2A7)), textAlign: TextAlign.center),
+              Text('AI estimates may vary based on local store availability', style: textStyles.bodySmall?.copyWith(color: theme.hint), textAlign: TextAlign.center),
             ],
           ),
         ),
@@ -316,41 +321,47 @@ class _AddDishScreenState extends State<AddDishScreen> {
   }
 
   Widget _buildPremiumBadge(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF5F0),
+        color: theme.accent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(color: const Color(0xFFF08080)),
+        border: Border.all(color: theme.accent),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.auto_awesome, size: 14, color: Color(0xFFF08080)),
+          Icon(Icons.auto_awesome, size: 14, color: theme.accent),
           const SizedBox(width: 4),
-          Text('PREMIUM', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: const Color(0xFFF08080))),
+          Text('PREMIUM', style: theme.textTheme.labelSmall?.copyWith(color: theme.accent)),
         ],
       ),
     );
   }
 
   Widget _buildSuggestionChip(String label, BuildContext context) {
-    return InkWell(
-      onTap: () {
-        _dishController?.text = label;
-        _dishController?.selection = TextSelection.collapsed(offset: label.length);
-        FocusScope.of(context).unfocus();
-        _generateForDish(context, label);
-      },
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFDF6E3),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: const Color(0xFFE8DFD0)),
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: 'Generate list for $label',
+      child: InkWell(
+        onTap: () {
+          _dishController?.text = label;
+          _dishController?.selection = TextSelection.collapsed(offset: label.length);
+          FocusScope.of(context).unfocus();
+          _generateForDish(context, label);
+        },
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: theme.dividerColor),
+          ),
+          child: Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryText)),
         ),
-        child: Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4A3728))),
       ),
     );
   }
